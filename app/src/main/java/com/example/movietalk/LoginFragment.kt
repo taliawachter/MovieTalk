@@ -21,9 +21,9 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         val etEmail = view.findViewById<EditText>(R.id.etLoginEmail)
         val etPassword = view.findViewById<EditText>(R.id.etLoginPassword)
         val btnLogin = view.findViewById<Button>(R.id.btnLogin)
-        val tvGoRegister = view.findViewById<TextView>(R.id.tvGoRegister)
+        val logintosingup = view.findViewById<TextView>(R.id.logintosingup)
 
-        tvGoRegister.setOnClickListener {
+        logintosingup.setOnClickListener {
             findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
         }
 
