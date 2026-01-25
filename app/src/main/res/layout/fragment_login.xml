@@ -19,17 +19,20 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Dark overlay to make text readable -->
+
+    <!-- Logo -->
     <View
         android:id="@+id/dimOverlay"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="#99000000"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
-    <!-- Logo -->
     <ImageView
         android:id="@+id/logoimg"
         android:layout_width="80dp"
@@ -61,20 +64,23 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="24dp"
+        android:layout_marginTop="32dp"
         app:cardBackgroundColor="#CC000000"
         app:cardCornerRadius="28dp"
         app:cardElevation="12dp"
         app:cardUseCompatPadding="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.666"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/movietalk"
+        app:layout_constraintVertical_bias="0.0"
         app:strokeColor="@color/gray">
 
         <!-- Content inside card -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="412dp"
+            android:layout_height="260dp"
             android:orientation="vertical"
             android:padding="20dp">
 
@@ -107,15 +113,6 @@
                 android:text="Sign In"
                 android:textColor="@color/white"
                 app:backgroundTint="@color/red" />
-
-            <TextView
-                android:id="@+id/loginforgetpass"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Forgot your password?"
-                android:textColor="@color/gray"
-                android:textSize="14sp" />
 
 
             <TextView

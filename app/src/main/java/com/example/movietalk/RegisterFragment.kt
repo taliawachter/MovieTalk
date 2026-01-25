@@ -20,7 +20,6 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
 
         val etEmail = view.findViewById<EditText>(R.id.etRegisterEmail)
         val etPassword = view.findViewById<EditText>(R.id.etRegisterPassword)
-        val etConfirm = view.findViewById<EditText>(R.id.etRegisterConfirmPassword)
         val btnRegister = view.findViewById<Button>(R.id.btnRegister)
         val tvGoLogin = view.findViewById<TextView>(R.id.tvGoLogin)
 
@@ -31,20 +30,14 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         btnRegister.setOnClickListener {
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString()
-            val confirm = etConfirm.text.toString()
 
-            if (email.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
+            if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             if (password.length < 6) {
                 Toast.makeText(requireContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (password != confirm) {
-                Toast.makeText(requireContext(), "Passwords do not match", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
