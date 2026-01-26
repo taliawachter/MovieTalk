@@ -3,51 +3,43 @@ package com.example.movietalk
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class PostsAdapter : RecyclerView.Adapter<PostsAdapter.PostViewHolder>() {
+class PostsAdapter(
+    private val onPostClick: (Post) -> Unit
+) : RecyclerView.Adapter<PostsAdapter.VH>() {
 
-    // דמו זמני – אח"כ נחליף ב-Firestore
-    private val posts = listOf(
-        Post(
-            title = "The Shawshank Redemption",
-            year = "1994",
-            rating = "★★★★★",
-            description = "A masterpiece of storytelling and human resilience.",
-            imageRes = R.drawable.wicked
-        ),
-        Post(
-            title = "Inception",
-            year = "2010",
-            rating = "★★★★☆",
-            description = "A mind-bending thriller by Christopher Nolan.",
-            imageRes = R.drawable.wicked
-        )
-    )
+    private val items = mutableListOf<Post>()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_post, parent, false)
-        return PostViewHolder(view)
+    fun submitList(newItems: List<Post>) {
+        items.clear()
+        items.addAll(newItems)
+        notifyDataSetChanged()
     }
 
-    override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        holder.bind(posts[position])
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
+        return VH(v, onPostClick)
     }
 
-    override fun getItemCount() = posts.size
+    override fun onBindViewHolder(holder: VH, position: Int) {
+        holder.bind(items[position])
+    }
 
-    class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    override fun getItemCount() = items.size
+
+    class VH(itemView: View, private val onPostClick: (Post) -> Unit) :
+        RecyclerView.ViewHolder(itemView) {
 
         fun bind(post: Post) {
-            itemView.findViewById<TextView>(R.id.tvTitle).text = post.title
-            itemView.findViewById<TextView>(R.id.tvYear).text = post.year
-            itemView.findViewById<TextView>(R.id.tvRating).text = post.rating
-            itemView.findViewById<TextView>(R.id.tvDesc).text = post.description
-            itemView.findViewById<ImageView>(R.id.ivPoster)
-                .setImageResource(post.imageRes)
+            // תוודאי שאלה ה-IDs שיש לך ב-item_post.xml
+            itemView.findViewById<TextView>(R.id.tvTitle).text =
+                if (post.userName.isNotBlank()) post.userName else "User"
+
+            itemView.findViewById<TextView>(R.id.tvDesc).text = post.text
+
+            itemView.setOnClickListener { onPostClick(post) }
         }
     }
 }

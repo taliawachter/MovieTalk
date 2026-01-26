@@ -1,9 +1,10 @@
 package com.example.movietalk
 
 data class Post(
-    val title: String,
-    val year: String,
-    val rating: String,
-    val description: String,
-    val imageRes: Int
+    val id: String = "",
+    val text: String = "",
+    val userId: String = "",
+    val userName: String = "",
+    val imageUrl: String = "",
+    val createdAt: Long = 0L
 )

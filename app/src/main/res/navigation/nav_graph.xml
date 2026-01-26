@@ -74,4 +74,18 @@
         app:popUpTo="@id/nav_graph"
         app:popUpToInclusive="true" />
 
+    <fragment
+        android:id="@+id/postDetailsFragment"
+        android:name="com.example.movietalk.PostDetailsFragment"
+        android:label="Post Details">
+        <argument
+            android:name="postId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_homeFragment_to_postDetailsFragment"
+            app:destination="@id/postDetailsFragment" />
+
+    </fragment>
+
+
 </navigation>
