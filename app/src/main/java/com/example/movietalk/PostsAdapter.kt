@@ -1,10 +1,13 @@
 package com.example.movietalk
 
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.squareup.picasso.Picasso
 
 class PostsAdapter(
     private val onPostClick: (Post) -> Unit
@@ -19,7 +22,8 @@ class PostsAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
+        val v = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_post, parent, false)
         return VH(v, onPostClick)
     }
 
@@ -32,12 +36,36 @@ class PostsAdapter(
     class VH(itemView: View, private val onPostClick: (Post) -> Unit) :
         RecyclerView.ViewHolder(itemView) {
 
-        fun bind(post: Post) {
-            // תוודאי שאלה ה-IDs שיש לך ב-item_post.xml
-            itemView.findViewById<TextView>(R.id.tvTitle).text =
-                if (post.userName.isNotBlank()) post.userName else "User"
+        private val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
+        private val tvDesc: TextView = itemView.findViewById(R.id.tvDesc)
+        private val tvUsername: TextView = itemView.findViewById(R.id.tvUsername)
+        private val imgPost: ImageView = itemView.findViewById(R.id.imgPost)
 
-            itemView.findViewById<TextView>(R.id.tvDesc).text = post.text
+        fun bind(post: Post) {
+            // 1) כותרת הפוסט (מה שהמשתמש כתב בזמן העלאה)
+            tvTitle.text = if (post.title.isNotBlank()) post.title else "Untitled"
+
+            // 2) תוכן הפוסט
+            tvDesc.text = post.text
+
+            // 3) שם משתמש מתחת למלל
+            tvUsername.text = if (post.userName.isNotBlank()) post.userName else "User"
+
+            // 4) תמונה (אם קיימת)
+            val value = post.imageUrl.trim()
+            if (value.isBlank()) {
+                imgPost.visibility = View.GONE
+            } else {
+                imgPost.visibility = View.VISIBLE
+
+                val request = if (value.startsWith("content://") || value.startsWith("file://")) {
+                    Picasso.get().load(Uri.parse(value))
+                } else {
+                    Picasso.get().load(value) // https://...
+                }
+
+                request.into(imgPost)
+            }
 
             itemView.setOnClickListener { onPostClick(post) }
         }

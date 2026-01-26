@@ -42,7 +42,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 val posts = snap.documents.map { doc ->
                     Post(
                         id = doc.id,
+                        title = doc.getString("title").orEmpty(),
                         text = doc.getString("text").orEmpty(),
+                        rating = (doc.getDouble("rating") ?: 0.0).toFloat(),
                         userId = doc.getString("userId").orEmpty(),
                         userName = doc.getString("userName").orEmpty(),
                         imageUrl = doc.getString("imageUrl").orEmpty(),

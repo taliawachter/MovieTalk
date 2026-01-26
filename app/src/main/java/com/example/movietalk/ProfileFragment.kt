@@ -19,8 +19,12 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         val btnEdit = view.findViewById<Button>(R.id.btnEdit)
 
         val user = FirebaseAuth.getInstance().currentUser
-        tvEmail.text = user?.email ?: "Not logged in"
-        tvName.text = user?.displayName ?: "MovieTalk user"
+
+        val email = user?.email
+        val username = email?.substringBefore("@")
+
+        tvName.text = username ?: "MovieTalk user"
+        tvEmail.text = email ?: ""
 
         btnEdit.setOnClickListener {
             // אפשר בהמשך לפתוח EditProfileFragment

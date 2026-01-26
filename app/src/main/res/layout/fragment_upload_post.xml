@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black">
+    android:background="@color/black">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -10,54 +11,157 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- ===== Title ===== -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Create a post"
-            android:textColor="@android:color/white"
+            android:text="Movie / Title"
+            android:textColor="@color/white"
             android:textStyle="bold"
-            android:textSize="20sp"
-            android:layout_marginBottom="12dp" />
+            android:textSize="16sp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="6dp" />
 
-        <ImageView
-            android:id="@+id/ivPreview"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="220dp"
-            android:scaleType="centerCrop"
-            android:background="#1A1A1A"
-            android:contentDescription="preview"
-            android:layout_marginBottom="12dp" />
+            android:layout_height="wrap_content"
+            app:boxBackgroundMode="outline"
+            app:boxStrokeColor="@color/gray"
+            app:boxStrokeWidth="1dp"
+            app:boxStrokeWidthFocused="2dp"
+            app:hintTextColor="@color/gray">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Write a title..."
+                android:inputType="textCapSentences"
+                android:textColor="@color/white"
+                android:textColorHint="@color/gray"
+                android:padding="14dp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- ===== Rating ===== -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            app:cardBackgroundColor="@color/black"
+            app:cardCornerRadius="16dp"
+            app:strokeColor="@color/gray"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Your Rating"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:textSize="16sp" />
+
+                <RatingBar
+                    android:id="@+id/ratingBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:numStars="5"
+                    android:stepSize="1.0"
+                    android:rating="0"
+                    android:isIndicator="false"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Please select a rating"
+                    android:textColor="@color/gray"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ===== Review ===== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your Review"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="6dp" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:boxBackgroundMode="outline"
+            app:boxStrokeColor="@color/gray"
+            app:boxStrokeWidth="1dp"
+            app:boxStrokeWidthFocused="2dp"
+            app:hintTextColor="@color/gray">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etText"
+                android:layout_width="match_parent"
+                android:layout_height="160dp"
+                android:hint="Write your post / review..."
+                android:gravity="top"
+                android:inputType="textMultiLine"
+                android:textColor="@color/white"
+                android:textColorHint="@color/gray"
+                android:padding="14dp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- ===== Image ===== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Upload Image (Optional)"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="6dp" />
 
         <Button
             android:id="@+id/btnPickImage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Pick image" />
-
-        <EditText
-            android:id="@+id/etText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:hint="Write something about the movie..."
-            android:textColor="@android:color/white"
-            android:textColorHint="#80FFFFFF"
-            android:backgroundTint="@color/red"
-            android:minLines="3" />
+            android:text="Upload Image"
+            android:backgroundTint="@color/gray"
+            android:textColor="@color/white" />
+
+        <ImageView
+            android:id="@+id/ivPreview"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_marginTop="12dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:contentDescription="Preview" />
 
         <Button
             android:id="@+id/btnPost"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Post"
-            android:layout_marginTop="12dp" />
-
-        <TextView
-            android:id="@+id/tvStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#B3FFFFFF"
-            android:layout_marginTop="10dp" />
+            android:layout_marginTop="14dp"
+            android:text="Creat Post"
+            android:backgroundTint="@color/red"
+            android:textColor="@color/white" />
 
     </LinearLayout>
 </ScrollView>
