@@ -11,6 +11,7 @@ import android.widget.RatingBar
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -70,7 +71,6 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
 
             val username = user.email?.substringBefore("@") ?: "User"
 
-            // תמונה אופציונלית
             val imageValue = selectedImageUri?.toString().orEmpty()
 
             val rating = ratingBar.rating  // float (0..5)
@@ -96,7 +96,13 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                     selectedImageUri = null
                     ivPreview.setImageDrawable(null)
 
-                    findNavController().navigateUp()
+                    findNavController().navigate(
+                        R.id.homeFragment,
+                        null,
+                        NavOptions.Builder()
+                            .setPopUpTo(R.id.homeFragment, true)
+                            .build()
+                    )
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(
