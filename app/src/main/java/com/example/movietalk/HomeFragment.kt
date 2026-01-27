@@ -11,7 +11,6 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
-
     private val db by lazy { FirebaseFirestore.getInstance() }
     private var reg: ListenerRegistration? = null
 
@@ -22,13 +21,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         val rv = view.findViewById<RecyclerView>(R.id.rvPosts)
         rv.layoutManager = LinearLayoutManager(requireContext())
-
         postsAdapter = PostsAdapter { post ->
             val bundle = Bundle().apply { putString("postId", post.id) }
             findNavController().navigate(R.id.postDetailsFragment, bundle)
         }
         rv.adapter = postsAdapter
-
         listenToPosts()
     }
 

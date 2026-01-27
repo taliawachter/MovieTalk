@@ -42,16 +42,10 @@ class PostsAdapter(
         private val imgPost: ImageView = itemView.findViewById(R.id.imgPost)
 
         fun bind(post: Post) {
-            // 1) כותרת הפוסט (מה שהמשתמש כתב בזמן העלאה)
             tvTitle.text = if (post.title.isNotBlank()) post.title else "Untitled"
-
-            // 2) תוכן הפוסט
             tvDesc.text = post.text
-
-            // 3) שם משתמש מתחת למלל
             tvUsername.text = if (post.userName.isNotBlank()) post.userName else "User"
 
-            // 4) תמונה (אם קיימת)
             val value = post.imageUrl.trim()
             if (value.isBlank()) {
                 imgPost.visibility = View.GONE
@@ -61,7 +55,7 @@ class PostsAdapter(
                 val request = if (value.startsWith("content://") || value.startsWith("file://")) {
                     Picasso.get().load(Uri.parse(value))
                 } else {
-                    Picasso.get().load(value) // https://...
+                    Picasso.get().load(value)
                 }
 
                 request.into(imgPost)
