@@ -10,7 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 
 class PostsAdapter(
-    private val onPostClick: (Post) -> Unit
+    private val onPostClick: (Post) -> Unit,
+    private val onLikeClick: (Post) -> Unit
 ) : RecyclerView.Adapter<PostsAdapter.VH>() {
 
     private val items = mutableListOf<Post>()
@@ -24,7 +25,7 @@ class PostsAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         val v = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_post, parent, false)
-        return VH(v, onPostClick)
+        return VH(v, onPostClick, onLikeClick)
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
@@ -33,18 +34,26 @@ class PostsAdapter(
 
     override fun getItemCount() = items.size
 
-    class VH(itemView: View, private val onPostClick: (Post) -> Unit) :
-        RecyclerView.ViewHolder(itemView) {
+    class VH(
+        itemView: View,
+        private val onPostClick: (Post) -> Unit,
+        private val onLikeClick: (Post) -> Unit
+    ) : RecyclerView.ViewHolder(itemView) {
 
         private val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
         private val tvDesc: TextView = itemView.findViewById(R.id.tvDesc)
         private val tvUsername: TextView = itemView.findViewById(R.id.tvUsername)
         private val imgPost: ImageView = itemView.findViewById(R.id.imgPost)
 
+        private val tvLikes: TextView = itemView.findViewById(R.id.tvLikes)
+        private val ivLike: ImageView = itemView.findViewById(R.id.ivLike)
+
         fun bind(post: Post) {
             tvTitle.text = if (post.title.isNotBlank()) post.title else "Untitled"
             tvDesc.text = post.text
             tvUsername.text = if (post.userName.isNotBlank()) post.userName else "User"
+
+            tvLikes.text = post.likesCount.toString()
 
             val value = post.imageUrl.trim()
             if (value.isBlank()) {
@@ -57,11 +66,11 @@ class PostsAdapter(
                 } else {
                     Picasso.get().load(value)
                 }
-
                 request.into(imgPost)
             }
 
             itemView.setOnClickListener { onPostClick(post) }
+            ivLike.setOnClickListener { onLikeClick(post) }
         }
     }
 }

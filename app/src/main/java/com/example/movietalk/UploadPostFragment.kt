@@ -4,24 +4,24 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.RatingBar
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
+import com.example.movietalk.data.local.AppDatabase
+import com.example.movietalk.data.repository.PostRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 
 class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
 
-    private val db by lazy { FirebaseFirestore.getInstance() }
     private val auth by lazy { FirebaseAuth.getInstance() }
 
     private var selectedImageUri: Uri? = null
+    private lateinit var repo: PostRepository
 
     private val pickImage =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -36,6 +36,9 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val localDb = AppDatabase.getInstance(requireContext())
+        repo = PostRepository(FirebaseFirestore.getInstance(), localDb.postDao())
 
         val ivPreview = view.findViewById<ImageView>(R.id.ivPreview)
         val btnPickImage = view.findViewById<Button>(R.id.btnPickImage)
@@ -70,24 +73,29 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
             }
 
             val username = user.email?.substringBefore("@") ?: "User"
+            val rating = ratingBar.rating
 
-            val imageValue = selectedImageUri?.toString().orEmpty()
+            val id = FirebaseFirestore.getInstance().collection("posts").document().id
 
-            val rating = ratingBar.rating  // float (0..5)
+            viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    val imageUrl = selectedImageUri?.toString().orEmpty()
 
-            val post = hashMapOf(
-                "title" to title,
-                "text" to text,
-                "rating" to rating,          // ✅ חדש
-                "userId" to uid,
-                "userName" to username,      // ✅ לא מייל
-                "imageUrl" to imageValue,    // נשאר, אבל רק מהגלריה
-                "createdAt" to System.currentTimeMillis()
-            )
+                    val postObj = Post(
+                        id = id,
+                        title = title,
+                        text = text,
+                        rating = rating,
+                        userId = uid,
+                        userName = username,
+                        imageUrl = imageUrl,
+                        createdAt = System.currentTimeMillis(),
+                        likesCount = 0,
+                        likedBy = emptyList()
+                    )
 
-            db.collection("posts")
-                .add(post)
-                .addOnSuccessListener {
+                    repo.addPost(postObj)
+
                     Toast.makeText(requireContext(), "Post uploaded!", Toast.LENGTH_SHORT).show()
 
                     etTitle.setText("")
@@ -96,21 +104,29 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                     selectedImageUri = null
                     ivPreview.setImageDrawable(null)
 
-                    findNavController().navigate(
-                        R.id.homeFragment,
-                        null,
-                        NavOptions.Builder()
-                            .setPopUpTo(R.id.homeFragment, true)
-                            .build()
-                    )
-                }
-                .addOnFailureListener { e ->
+                    val nav = findNavController()
+
+                    val popped = nav.popBackStack(R.id.homeFragment, false)
+
+                    if (!popped) {
+                        nav.navigate(
+                            R.id.homeFragment,
+                            null,
+                            NavOptions.Builder()
+                                .setPopUpTo(nav.graph.startDestinationId, true)
+                                .build()
+                        )
+                    }
+
+
+                } catch (e: Exception) {
                     Toast.makeText(
                         requireContext(),
                         "Upload failed: ${e.message}",
                         Toast.LENGTH_LONG
                     ).show()
                 }
+            }
         }
     }
 }

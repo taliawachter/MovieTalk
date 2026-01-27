@@ -8,5 +8,7 @@ data class Post(
     val userId: String = "",
     val userName: String = "",
     val imageUrl: String = "",
-    val createdAt: Long = 0L
+    val createdAt: Long = 0L,
+    val likesCount: Int = 0,
+    val likedBy: List<String> = emptyList()
 )
