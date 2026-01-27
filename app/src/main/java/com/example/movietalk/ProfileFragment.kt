@@ -27,7 +27,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         tvEmail.text = email ?: ""
 
         btnEdit.setOnClickListener {
-            // אפשר בהמשך לפתוח EditProfileFragment
         }
 
         btnLogout.setOnClickListener {

@@ -29,8 +29,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         postsAdapter = PostsAdapter(
             onPostClick = { post ->
-                val bundle = Bundle().apply { putString("postId", post.id) }
-                findNavController().navigate(R.id.postDetailsFragment, bundle)
+                val action = HomeFragmentDirections
+                    .actionHomeFragmentToPostDetailsFragment(post.id)
+                findNavController().navigate(action)
             },
             onLikeClick = { post ->
                 val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
@@ -60,7 +61,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val fab = view.findViewById<FloatingActionButton>(R.id.fabAdd)
         fab.bringToFront()
         fab.setOnClickListener {
-            findNavController().navigate(R.id.uploadPostFragment)
+            val action = HomeFragmentDirections.actionHomeFragmentToUploadPostFragment()
+            findNavController().navigate(action)
         }
     }
 }

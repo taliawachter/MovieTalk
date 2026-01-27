@@ -9,43 +9,42 @@
         android:id="@+id/splashFragment"
         android:name="com.example.movietalk.SplashFragment"
         android:label="fragment_splash"
-        tools:layout="@layout/fragment_splash" >
+        tools:layout="@layout/fragment_splash">
+
         <action
             android:id="@+id/action_splashFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
+
         <action
             android:id="@+id/action_splashFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
     </fragment>
-    <fragment
-        android:id="@+id/homeFragment"
-        android:name="com.example.movietalk.HomeFragment"
-        android:label="fragment_home"
-        tools:layout="@layout/fragment_home" >
-        <action
-            android:id="@+id/action_homeFragment_to_loginFragment"
-            app:destination="@id/loginFragment" />
-    </fragment>
+
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.movietalk.LoginFragment"
         android:label="fragment_login"
-        tools:layout="@layout/fragment_login" >
+        tools:layout="@layout/fragment_login">
+
         <action
             android:id="@+id/action_loginFragment_to_registerFragment"
             app:destination="@id/registerFragment" />
+
         <action
             android:id="@+id/action_loginFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/registerFragment"
         android:name="com.example.movietalk.RegisterFragment"
         android:label="fragment_register"
-        tools:layout="@layout/fragment_register" >
+        tools:layout="@layout/fragment_register">
+
         <action
             android:id="@+id/action_registerFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
+
         <action
             android:id="@+id/action_registerFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
@@ -54,8 +53,21 @@
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.movietalk.HomeFragment"
-        android:label="Home"
-        tools:layout="@layout/fragment_home" />
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home">
+
+        <action
+            android:id="@+id/action_homeFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+
+ד        <action
+            android:id="@+id/action_homeFragment_to_postDetailsFragment"
+            app:destination="@id/postDetailsFragment" />
+
+        <action
+            android:id="@+id/action_homeFragment_to_uploadPostFragment"
+            app:destination="@id/uploadPostFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/uploadPostFragment"
@@ -67,25 +79,23 @@
         android:id="@+id/profileFragment"
         android:name="com.example.movietalk.ProfileFragment"
         android:label="Profile"
-        tools:layout="@layout/fragment_profile" />
-    <action
-        android:id="@+id/action_profileFragment_to_loginFragment"
-        app:destination="@id/loginFragment"
-        app:popUpTo="@id/nav_graph"
-        app:popUpToInclusive="true" />
+        tools:layout="@layout/fragment_profile">
+
+        <action
+            android:id="@+id/action_profileFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/postDetailsFragment"
         android:name="com.example.movietalk.PostDetailsFragment"
         android:label="Post Details">
+
         <argument
             android:name="postId"
             app:argType="string" />
-        <action
-            android:id="@+id/action_homeFragment_to_postDetailsFragment"
-            app:destination="@id/postDetailsFragment" />
-
     </fragment>
-
 
 </navigation>

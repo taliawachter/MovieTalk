@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.example.movietalk.databinding.DialogEditPostBinding
 import com.example.movietalk.databinding.FragmentPostDetailsBinding
@@ -22,6 +23,8 @@ class PostDetailsFragment : Fragment() {
 
     private var _binding: FragmentPostDetailsBinding? = null
     private val binding get() = _binding!!
+
+    private val args: PostDetailsFragmentArgs by navArgs()
 
     private val auth by lazy { FirebaseAuth.getInstance() }
     private val db by lazy { FirebaseFirestore.getInstance() }
@@ -49,7 +52,8 @@ class PostDetailsFragment : Fragment() {
 
         binding.toolbar.setNavigationOnClickListener { findNavController().navigateUp() }
 
-        val postId = arguments?.getString("postId") ?: run {
+        val postId = args.postId
+        if (postId.isBlank()) {
             Toast.makeText(requireContext(), "Missing postId", Toast.LENGTH_SHORT).show()
             findNavController().navigateUp()
             return
@@ -146,7 +150,6 @@ class PostDetailsFragment : Fragment() {
 
         dialog.show()
 
-        // preview chosen image if selected while dialog is open
         dialog.window?.decorView?.postDelayed(object : Runnable {
             override fun run() {
                 if (dialog.isShowing) {
