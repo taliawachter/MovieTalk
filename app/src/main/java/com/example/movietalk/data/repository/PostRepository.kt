@@ -29,9 +29,7 @@ class PostRepository(
                 userName = doc.getString("userName").orEmpty(),
                 imageUrl = doc.getString("imageUrl").orEmpty(),
                 createdAt = doc.getLong("createdAt") ?: 0L,
-                likesCount = (doc.getLong("likesCount") ?: 0L).toInt(),
-                likedBy = (doc.get("likedBy") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
-            )
+                )
         }
         postDao.upsertAll(posts.map { it.toEntity() })
 
@@ -40,27 +38,6 @@ class PostRepository(
     suspend fun addPost(post: Post) {
         firestore.collection("posts").document(post.id).set(post).await()
         postDao.upsertAll(listOf(post.toEntity()))
-    }
-
-    suspend fun toggleLike(postId: String, currentUserId: String) {
-        val ref = firestore.collection("posts").document(postId)
-
-        firestore.runTransaction { trx ->
-            val snap = trx.get(ref)
-            val likedBy = (snap.get("likedBy") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
-            val likesCount = (snap.getLong("likesCount") ?: 0L).toInt()
-
-            val alreadyLiked = likedBy.contains(currentUserId)
-            if (alreadyLiked) {
-                trx.update(ref, "likedBy", FieldValue.arrayRemove(currentUserId))
-                trx.update(ref, "likesCount", (likesCount - 1).coerceAtLeast(0))
-            } else {
-                trx.update(ref, "likedBy", FieldValue.arrayUnion(currentUserId))
-                trx.update(ref, "likesCount", likesCount + 1)
-            }
-        }.await()
-
-        refreshPosts()
     }
 }
 
@@ -73,8 +50,7 @@ private fun Post.toEntity(): PostEntity =
         userId = userId,
         userName = userName,
         imageUrl = imageUrl,
-        createdAt = createdAt,
-        likesCount = likesCount
+        createdAt = createdAt
     )
 
 private fun PostEntity.toPost(): Post =
@@ -87,6 +63,4 @@ private fun PostEntity.toPost(): Post =
         userName = userName,
         imageUrl = imageUrl,
         createdAt = createdAt,
-        likesCount = likesCount,
-        likedBy = emptyList()
-    )
+       )

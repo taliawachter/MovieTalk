@@ -90,9 +90,7 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                         userName = username,
                         imageUrl = imageUrl,
                         createdAt = System.currentTimeMillis(),
-                        likesCount = 0,
-                        likedBy = emptyList()
-                    )
+                        )
 
                     repo.addPost(postObj)
 

@@ -23,7 +23,10 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "movietalk_db"
-                ).build().also { INSTANCE = it }
+                )
+                    .fallbackToDestructiveMigration() // ✅ חשוב כדי שלא יקרוס אחרי שינוי schema
+                    .build()
+                    .also { INSTANCE = it }
             }
         }
     }

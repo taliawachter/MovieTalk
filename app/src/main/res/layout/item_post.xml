@@ -40,39 +40,20 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imgPost" />
 
-        <TextView
-            android:id="@+id/tvRating"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="★★★★★"
-            android:textColor="@color/red"
-            android:textSize="14sp"
-            app:layout_constraintStart_toStartOf="@+id/tvTitle"
-            app:layout_constraintTop_toBottomOf="@id/tvTitle" />
-
-        <ImageView
-            android:id="@+id/ivLike"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="6dp"
-            android:src="@drawable/ic_like"
-            android:contentDescription="Like"
-            app:layout_constraintStart_toEndOf="@id/tvRating"
-            app:layout_constraintTop_toTopOf="@id/tvRating" />
-
-        <TextView
-            android:id="@+id/tvLikes"
+        <RatingBar
+            android:id="@+id/ratingBar"
+            style="?android:attr/ratingBarStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
-            android:layout_marginTop="7dp"
-            android:text="0"
-            android:textColor="#E6FFFFFF"
-            android:textSize="13sp"
-            app:layout_constraintStart_toEndOf="@id/ivLike"
-            app:layout_constraintTop_toTopOf="@id/tvRating" />
+            android:layout_marginTop="4dp"
+            android:isIndicator="true"
+            android:numStars="5"
+            android:scaleX="0.8"
+            android:scaleY="0.8"
+            android:stepSize="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle" />
 
         <TextView
             android:id="@+id/tvDesc"
@@ -86,8 +67,8 @@
             android:textSize="13sp"
             app:layout_constraintEnd_toEndOf="@+id/tvTitle"
             app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="@+id/tvRating"
-            app:layout_constraintTop_toBottomOf="@id/tvRating" />
+            app:layout_constraintStart_toStartOf="@+id/tvTitle"
+            app:layout_constraintTop_toBottomOf="@id/ratingBar" />
 
         <TextView
             android:id="@+id/tvUsername"
