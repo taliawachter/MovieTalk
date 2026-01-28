@@ -2,6 +2,7 @@ package com.example.movietalk
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -35,6 +36,16 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             }
         )
         rv.adapter = postsAdapter
+
+        // ✅ כפתור +
+        val fab = view.findViewById<FloatingActionButton>(R.id.fabAdd) // שנהי אם ה-id אצלך שונה
+        fab.bringToFront()
+        fab.setOnClickListener {
+            // בדיקת קליק (אפשר למחוק אחרי שעובד)
+            // Toast.makeText(requireContext(), "clicked +", Toast.LENGTH_SHORT).show()
+
+            findNavController().navigate(R.id.action_homeFragment_to_uploadPostFragment)
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             repo.observePosts().collect { posts ->

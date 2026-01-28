@@ -3,7 +3,6 @@ package com.example.movietalk.data.repository
 import com.example.movietalk.Post
 import com.example.movietalk.data.local.PostDao
 import com.example.movietalk.data.local.PostEntity
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -34,11 +33,26 @@ class PostRepository(
         postDao.upsertAll(posts.map { it.toEntity() })
 
 }
-
     suspend fun addPost(post: Post) {
-        firestore.collection("posts").document(post.id).set(post).await()
+        val data = hashMapOf(
+            "id" to post.id,
+            "title" to post.title,
+            "text" to post.text,
+            "rating" to post.rating,
+            "userId" to post.userId,
+            "userName" to post.userName,
+            "imageUrl" to post.imageUrl,
+            "createdAt" to post.createdAt
+        )
+
+        firestore.collection("posts")
+            .document(post.id)
+            .set(data)
+            .await()
+
         postDao.upsertAll(listOf(post.toEntity()))
     }
+
 }
 
 private fun Post.toEntity(): PostEntity =

@@ -10,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import androidx.navigation.ui.NavigationUI
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -40,8 +41,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         bottomNav.setupWithNavController(navController)
-
+        
         navController.addOnDestinationChangedListener { _, destination, _ ->
+            // Only control visibility; setupWithNavController already handles menu sync
             bottomNav.visibility = when (destination.id) {
                 R.id.homeFragment,
                 R.id.uploadPostFragment,

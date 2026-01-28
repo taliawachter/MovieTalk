@@ -8,7 +8,6 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.movietalk.data.local.AppDatabase
 import com.example.movietalk.data.repository.PostRepository
@@ -30,7 +29,10 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                 requireContext().contentResolver.takePersistableUriPermission(uri, flags)
 
                 selectedImageUri = uri
-                view?.findViewById<ImageView>(R.id.ivPreview)?.setImageURI(uri)
+                view?.findViewById<ImageView>(R.id.ivPreview)?.apply {
+                    setImageURI(uri)
+                    visibility = View.VISIBLE
+                }
             }
         }
 
@@ -48,6 +50,16 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
         val etText = view.findViewById<EditText>(R.id.etText)
 
         val btnPost = view.findViewById<Button>(R.id.btnPost)
+
+        // Reset form fields and preview when fragment is viewed
+        etTitle.setText("")
+        etText.setText("")
+        ratingBar.rating = 0f
+        selectedImageUri = null
+        ivPreview.apply {
+            setImageDrawable(null)
+            visibility = View.GONE
+        }
 
         btnPickImage.setOnClickListener {
             pickImage.launch(arrayOf("image/*"))
@@ -74,7 +86,6 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
 
             val username = user.email?.substringBefore("@") ?: "User"
             val rating = ratingBar.rating
-
             val id = FirebaseFirestore.getInstance().collection("posts").document().id
 
             viewLifecycleOwner.lifecycleScope.launch {
@@ -90,9 +101,10 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                         userName = username,
                         imageUrl = imageUrl,
                         createdAt = System.currentTimeMillis(),
-                        )
+                    )
 
                     repo.addPost(postObj)
+                    repo.refreshPosts()
 
                     Toast.makeText(requireContext(), "Post uploaded!", Toast.LENGTH_SHORT).show()
 
@@ -100,22 +112,12 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                     etText.setText("")
                     ratingBar.rating = 0f
                     selectedImageUri = null
-                    ivPreview.setImageDrawable(null)
-
-                    val nav = findNavController()
-
-                    val popped = nav.popBackStack(R.id.homeFragment, false)
-
-                    if (!popped) {
-                        nav.navigate(
-                            R.id.homeFragment,
-                            null,
-                            NavOptions.Builder()
-                                .setPopUpTo(nav.graph.startDestinationId, true)
-                                .build()
-                        )
+                    ivPreview.apply {
+                        setImageDrawable(null)
+                        visibility = View.GONE
                     }
 
+                    findNavController().navigate(R.id.action_uploadPostFragment_to_homeFragment)
 
                 } catch (e: Exception) {
                     Toast.makeText(
@@ -123,6 +125,8 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                         "Upload failed: ${e.message}",
                         Toast.LENGTH_LONG
                     ).show()
+                } finally {
+                    btnPost.isEnabled = true
                 }
             }
         }

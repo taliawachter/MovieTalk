@@ -60,7 +60,7 @@
             android:id="@+id/action_homeFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
 
-ד        <action
+        <action
             android:id="@+id/action_homeFragment_to_postDetailsFragment"
             app:destination="@id/postDetailsFragment" />
 
@@ -73,7 +73,14 @@
         android:id="@+id/uploadPostFragment"
         android:name="com.example.movietalk.UploadPostFragment"
         android:label="Upload"
-        tools:layout="@layout/fragment_upload_post" />
+        tools:layout="@layout/fragment_upload_post">
+
+        <action
+            android:id="@+id/action_uploadPostFragment_to_homeFragment"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/uploadPostFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/profileFragment"
