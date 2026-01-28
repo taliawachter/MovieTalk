@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        WindowCompat.setDecorFitsSystemWindows(window, true)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = Color.BLACK
         window.navigationBarColor = Color.BLACK
         WindowInsetsControllerCompat(window, window.decorView).apply {
@@ -35,8 +35,7 @@ class MainActivity : AppCompatActivity() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
 
         ViewCompat.setOnApplyWindowInsetsListener(bottomNav) { v, insets ->
-            val navBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-            v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, navBars.bottom)
+            v.setPadding(0, 0, 0, 0)
             insets
         }
 

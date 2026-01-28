@@ -34,23 +34,46 @@ class PostRepository(
 
 }
     suspend fun addPost(post: Post) {
-        val data = hashMapOf(
-            "id" to post.id,
-            "title" to post.title,
-            "text" to post.text,
-            "rating" to post.rating,
-            "userId" to post.userId,
-            "userName" to post.userName,
-            "imageUrl" to post.imageUrl,
-            "createdAt" to post.createdAt
-        )
+        android.util.Log.d("PostRepository", "addPost called with id=${post.id}")
+        
+        // Save to local database first (this always works)
+        try {
+            android.util.Log.d("PostRepository", "Writing to local DB...")
+            postDao.upsertAll(listOf(post.toEntity()))
+            android.util.Log.d("PostRepository", "Local DB write successful")
+        } catch (e: Exception) {
+            android.util.Log.e("PostRepository", "Local DB write failed", e)
+            throw e
+        }
 
-        firestore.collection("posts")
-            .document(post.id)
-            .set(data)
-            .await()
+        // Try to sync with Firestore in background (non-blocking)
+        try {
+            android.util.Log.d("PostRepository", "Syncing to Firestore in background...")
+            val data = hashMapOf(
+                "id" to post.id,
+                "title" to post.title,
+                "text" to post.text,
+                "rating" to post.rating,
+                "userId" to post.userId,
+                "userName" to post.userName,
+                "imageUrl" to post.imageUrl,
+                "createdAt" to post.createdAt
+            )
 
-        postDao.upsertAll(listOf(post.toEntity()))
+            firestore.collection("posts")
+                .document(post.id)
+                .set(data)
+                // Don't await - let it happen in background
+                .addOnSuccessListener {
+                    android.util.Log.d("PostRepository", "Firestore sync successful")
+                }
+                .addOnFailureListener { e ->
+                    android.util.Log.e("PostRepository", "Firestore sync failed", e)
+                }
+        } catch (e: Exception) {
+            // Firestore sync error is non-critical
+            android.util.Log.e("PostRepository", "Firestore sync error", e)
+        }
     }
 
 }

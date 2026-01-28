@@ -14,6 +14,7 @@ import com.example.movietalk.data.repository.PostRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
 
@@ -88,8 +89,12 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
             val rating = ratingBar.rating
             val id = FirebaseFirestore.getInstance().collection("posts").document().id
 
-            viewLifecycleOwner.lifecycleScope.launch {
+            btnPost.isEnabled = false
+
+            // Use activity's lifecycle scope instead of fragment's for more stability
+            requireActivity().lifecycleScope.launch {
                 try {
+                    android.util.Log.d("UploadPost", "Starting post creation...")
                     val imageUrl = selectedImageUri?.toString().orEmpty()
 
                     val postObj = Post(
@@ -103,30 +108,70 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                         createdAt = System.currentTimeMillis(),
                     )
 
-                    repo.addPost(postObj)
-                    repo.refreshPosts()
-
-                    Toast.makeText(requireContext(), "Post uploaded!", Toast.LENGTH_SHORT).show()
-
-                    etTitle.setText("")
-                    etText.setText("")
-                    ratingBar.rating = 0f
-                    selectedImageUri = null
-                    ivPreview.apply {
-                        setImageDrawable(null)
-                        visibility = View.GONE
+                    android.util.Log.d("UploadPost", "Adding post...")
+                    try {
+                        val result = withTimeoutOrNull(15000) { // 15 second timeout
+                            repo.addPost(postObj)
+                        }
+                        if (result == null) {
+                            throw Exception("Firestore write timeout - operation took too long")
+                        }
+                        android.util.Log.d("UploadPost", "addPost completed")
+                    } catch (addException: Exception) {
+                        android.util.Log.e("UploadPost", "addPost failed", addException)
+                        throw addException
+                    }
+                    
+                    android.util.Log.d("UploadPost", "Refreshing posts...")
+                    try {
+                        repo.refreshPosts()
+                        android.util.Log.d("UploadPost", "refreshPosts completed")
+                    } catch (refreshException: Exception) {
+                        android.util.Log.e("UploadPost", "refreshPosts failed", refreshException)
+                        throw refreshException
                     }
 
-                    findNavController().navigate(R.id.action_uploadPostFragment_to_homeFragment)
+                    android.util.Log.d("UploadPost", "Post uploaded successfully!")
+                    if (isAdded) {
+                        Toast.makeText(requireContext(), "Post uploaded!", Toast.LENGTH_SHORT).show()
+
+                        etTitle.setText("")
+                        etText.setText("")
+                        ratingBar.rating = 0f
+                        selectedImageUri = null
+                        ivPreview.apply {
+                            setImageDrawable(null)
+                            visibility = View.GONE
+                        }
+
+                        android.util.Log.d("UploadPost", "Waiting before navigation...")
+                        kotlinx.coroutines.delay(1000)
+                        
+                        android.util.Log.d("UploadPost", "isAdded=$isAdded, view=$view")
+                        if (isAdded && view != null) {
+                            try {
+                                android.util.Log.d("UploadPost", "Navigating to home...")
+                                findNavController().navigate(R.id.action_uploadPostFragment_to_homeFragment)
+                                android.util.Log.d("UploadPost", "Navigation successful!")
+                            } catch (navException: Exception) {
+                                android.util.Log.e("UploadPost", "Navigation failed", navException)
+                                Toast.makeText(requireContext(), "Navigation error: ${navException.message}", Toast.LENGTH_LONG).show()
+                            }
+                        } else {
+                            android.util.Log.e("UploadPost", "Cannot navigate: isAdded=$isAdded")
+                        }
+                    }
 
                 } catch (e: Exception) {
-                    Toast.makeText(
-                        requireContext(),
-                        "Upload failed: ${e.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
-                } finally {
                     btnPost.isEnabled = true
+                    android.util.Log.e("UploadPost", "Upload failed", e)
+                    if (isAdded) {
+                        Toast.makeText(
+                            requireContext(),
+                            "Upload failed: ${e.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
             }
         }

@@ -12,6 +12,14 @@ import androidx.navigation.navOptions
 import com.google.firebase.auth.FirebaseAuth
 
 class RegisterFragment : Fragment(R.layout.fragment_register) {
+    private var selectedProfileUri: android.net.Uri? = null
+
+    private val pickImageLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri: android.net.Uri? ->
+        uri?.let {
+            selectedProfileUri = it
+            view?.findViewById<android.widget.ImageView>(R.id.imgProfile)?.setImageURI(it)
+        }
+    }
 
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
 
@@ -23,6 +31,11 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         val btnRegister = view.findViewById<Button>(R.id.btnRegister)
         val tvGoLogin = view.findViewById<TextView>(R.id.tvGoLogin)
 
+        val btnSelectProfilePic = view.findViewById<Button>(R.id.btnSelectProfilePic)
+        btnSelectProfilePic.setOnClickListener {
+            pickImageLauncher.launch("image/*")
+        }
+
         tvGoLogin.setOnClickListener {
             findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
         }
@@ -31,18 +44,27 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString()
 
+            android.util.Log.d("RegisterFragment", "Register button clicked: email=$email")
+
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
+                android.util.Log.e("RegisterFragment", "Empty fields")
                 return@setOnClickListener
             }
 
             if (password.length < 6) {
                 Toast.makeText(requireContext(), "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
+                android.util.Log.e("RegisterFragment", "Password too short")
                 return@setOnClickListener
             }
 
+            Toast.makeText(requireContext(), "Registering...", Toast.LENGTH_SHORT).show()
+            android.util.Log.d("RegisterFragment", "Attempting registration...")
+
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnSuccessListener {
+                    Toast.makeText(requireContext(), "Registration successful!", Toast.LENGTH_SHORT).show()
+                    android.util.Log.d("RegisterFragment", "Registration success, navigating to home")
                     val options = navOptions {
                         popUpTo(R.id.registerFragment) { inclusive = true }
                     }
@@ -50,6 +72,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(requireContext(), e.message ?: "Register failed", Toast.LENGTH_SHORT).show()
+                    android.util.Log.e("RegisterFragment", "Registration failed: ${e.message}", e)
                 }
         }
     }

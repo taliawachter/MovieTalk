@@ -2,7 +2,6 @@ package com.example.movietalk
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -10,7 +9,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.movietalk.data.local.AppDatabase
 import com.example.movietalk.data.repository.PostRepository
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 
@@ -36,16 +34,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             }
         )
         rv.adapter = postsAdapter
-
-        // ✅ כפתור +
-        val fab = view.findViewById<FloatingActionButton>(R.id.fabAdd) // שנהי אם ה-id אצלך שונה
-        fab.bringToFront()
-        fab.setOnClickListener {
-            // בדיקת קליק (אפשר למחוק אחרי שעובד)
-            // Toast.makeText(requireContext(), "clicked +", Toast.LENGTH_SHORT).show()
-
-            findNavController().navigate(R.id.action_homeFragment_to_uploadPostFragment)
-        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             repo.observePosts().collect { posts ->
