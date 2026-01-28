@@ -1,5 +1,4 @@
 package com.example.movietalk
-
 import android.app.AlertDialog
 import android.net.Uri
 import android.os.Bundle
@@ -8,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.widget.DialogTitle
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -23,22 +23,23 @@ class PostDetailsFragment : Fragment() {
 
     private var _binding: FragmentPostDetailsBinding? = null
     private val binding get() = _binding!!
-
     private val args: PostDetailsFragmentArgs by navArgs()
-
     private val auth by lazy { FirebaseAuth.getInstance() }
     private val db by lazy { FirebaseFirestore.getInstance() }
     private val storage by lazy { FirebaseStorage.getInstance() }
-
     private var currentOwnerId: String? = null
     private var currentText: String = ""
+    private var currentTitle: String = ""
+    private var currentRating: Float = 0f
+    private var dialogPreviewImageView: android.widget.ImageView? = null
     private var currentImageUrl: String? = null
-
     private var pickedImageUri: Uri? = null
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        pickedImageUri = uri
+        if (uri != null) {
+            pickedImageUri = uri
+            dialogPreviewImageView?.setImageURI(uri)
+        }
     }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -81,6 +82,8 @@ class PostDetailsFragment : Fragment() {
                 currentText = doc.getString("text").orEmpty()
                 currentImageUrl = doc.getString("imageUrl")
                 currentOwnerId = doc.getString("userId")
+                currentTitle = doc.getString("title").orEmpty()
+                currentRating = (doc.getDouble("rating") ?: 0.0).toFloat()
 
                 binding.tvText.text = currentText
                 binding.tvOwner.text = "by " + (doc.getString("userName") ?: "User")
@@ -105,7 +108,8 @@ class PostDetailsFragment : Fragment() {
     private fun openEditDialog(postId: String) {
         pickedImageUri = null
         val d = DialogEditPostBinding.inflate(layoutInflater)
-
+        d.etEditTitle.setText(currentTitle)
+        d.rbEditRating.rating = currentRating
         d.etEditText.setText(currentText)
         currentImageUrl?.let { url ->
             if (url.isNotBlank()) Glide.with(this).load(url).into(d.imgPreview)
@@ -124,22 +128,30 @@ class PostDetailsFragment : Fragment() {
 
         dialog.setOnShowListener {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val newTitle = d.etEditTitle.text?.toString()?.trim().orEmpty()
+                val newRating = d.rbEditRating.rating
                 val newText = d.etEditText.text?.toString()?.trim().orEmpty()
+
+                if (newTitle.isBlank()) {
+                    d.etEditTitle.error = "Title required"
+                    return@setOnClickListener
+                }
                 if (newText.isEmpty()) {
                     d.etEditText.error = "Text required"
                     return@setOnClickListener
                 }
 
+
                 binding.progress.visibility = View.VISIBLE
                 val uri = pickedImageUri
                 if (uri != null) {
-                    uploadImageThenUpdate(postId, uri, newText) {
+                    uploadImageThenUpdate(postId, uri, newTitle, newText, newRating) {
                         binding.progress.visibility = View.GONE
                         dialog.dismiss()
                         loadPost(postId)
                     }
                 } else {
-                    updatePost(postId, newText, null) {
+                    updatePost(postId, newTitle, newText, newRating,null) {
                         binding.progress.visibility = View.GONE
                         dialog.dismiss()
                         loadPost(postId)
@@ -149,18 +161,9 @@ class PostDetailsFragment : Fragment() {
         }
 
         dialog.show()
-
-        dialog.window?.decorView?.postDelayed(object : Runnable {
-            override fun run() {
-                if (dialog.isShowing) {
-                    pickedImageUri?.let { d.imgPreview.setImageURI(it) }
-                    dialog.window?.decorView?.postDelayed(this, 300)
-                }
-            }
-        }, 300)
     }
 
-    private fun uploadImageThenUpdate(postId: String, uri: Uri, newText: String, onDone: () -> Unit) {
+    private fun uploadImageThenUpdate(postId: String, uri: Uri, newTitle: String, newText: String, newRating: Float, onDone: () -> Unit){
         val ref = storage.reference.child("posts/$postId/${UUID.randomUUID()}.jpg")
         ref.putFile(uri)
             .continueWithTask { task ->
@@ -168,7 +171,7 @@ class PostDetailsFragment : Fragment() {
                 ref.downloadUrl
             }
             .addOnSuccessListener { url ->
-                updatePost(postId, newText, url.toString(), onDone)
+                updatePost(postId, newTitle, newText, newRating,url.toString(), onDone)
             }
             .addOnFailureListener {
                 binding.progress.visibility = View.GONE
@@ -176,8 +179,12 @@ class PostDetailsFragment : Fragment() {
             }
     }
 
-    private fun updatePost(postId: String, newText: String, newImageUrl: String?, onDone: () -> Unit) {
-        val updates = hashMapOf<String, Any>("text" to newText)
+    private fun updatePost(postId: String, newTitle: String, newText: String, newRating: Float, newImageUrl: String?, onDone: () -> Unit){
+        val updates = hashMapOf<String, Any>(
+            "title" to newTitle,
+            "text" to newText,
+            "rating" to newRating
+        )
         if (newImageUrl != null) updates["imageUrl"] = newImageUrl
 
         db.collection("posts").document(postId).update(updates)
