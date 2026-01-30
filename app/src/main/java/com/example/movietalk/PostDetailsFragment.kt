@@ -125,9 +125,6 @@ class PostDetailsFragment : Fragment() {
                 Toast.makeText(requireContext(), getString(R.string.failed_to_load_post), Toast.LENGTH_SHORT).show()
             }
     }
-
-    // Removed openEditDialog and dialog code. Editing now handled by EditPostFragment.
-
     private fun confirmDelete(postId: String) {
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.delete_post_title))
@@ -141,7 +138,17 @@ class PostDetailsFragment : Fragment() {
         // Delete from Firebase
         db.collection("posts").document(postId).delete()
             .addOnSuccessListener {
-                // TODO: Also delete from local database if needed
+                // Delete from local database and refresh
+                viewLifecycleOwner.lifecycleScope.launch {
+                    try {
+                        val localDb = com.example.movietalk.data.local.AppDatabase.getInstance(requireContext())
+                        val repo = com.example.movietalk.data.repository.PostRepository(db, localDb.postDao())
+                        repo.deletePostById(postId)
+                        repo.refreshPosts()
+                    } catch (e: Exception) {
+                        android.util.Log.e("PostDetails", "Failed to delete local post", e)
+                    }
+                }
                 Toast.makeText(requireContext(), getString(R.string.deleted), Toast.LENGTH_SHORT).show()
                 findNavController().navigateUp() // or navigate to Home
             }

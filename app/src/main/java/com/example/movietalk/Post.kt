@@ -10,3 +10,4 @@ data class Post(
     val imageUrl: String = "",
     val createdAt: Long = 0L,
     )
+

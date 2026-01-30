@@ -1,6 +1,8 @@
 package com.example.movietalk.data.repository
 
 import com.example.movietalk.Post
+import com.example.movietalk.toEntity
+import com.example.movietalk.toPost
 import com.example.movietalk.data.local.PostDao
 import com.example.movietalk.data.local.PostEntity
 import com.google.firebase.firestore.FirebaseFirestore
@@ -16,23 +18,6 @@ class PostRepository(
     fun observePosts(): Flow<List<Post>> =
         postDao.observePosts().map { list -> list.map { it.toPost() } }
 
-    suspend fun refreshPosts() {
-        val snapshot = firestore.collection("posts").get().await()
-        val posts = snapshot.documents.map { doc ->
-            Post(
-                id = doc.id,
-                title = doc.getString("title").orEmpty(),
-                text = doc.getString("text").orEmpty(),
-                rating = (doc.getDouble("rating") ?: 0.0).toFloat(),
-                userId = doc.getString("userId").orEmpty(),
-                userName = doc.getString("userName").orEmpty(),
-                imageUrl = doc.getString("imageUrl").orEmpty(),
-                createdAt = doc.getLong("createdAt") ?: 0L,
-                )
-        }
-        postDao.upsertAll(posts.map { it.toEntity() })
-
-}
     suspend fun addPost(post: Post) {
         android.util.Log.d("PostRepository", "addPost called with id=${post.id}")
         // Save to local database first (this always works)
@@ -45,7 +30,6 @@ class PostRepository(
             throw e
         }
 
-        // Try to sync with Firestore in background (non-blocking)
         try {
             android.util.Log.d("PostRepository", "Syncing to Firestore in background...")
             val data = hashMapOf(
@@ -75,28 +59,24 @@ class PostRepository(
         }
     }
 
+    suspend fun refreshPosts() {
+        val snapshot = firestore.collection("posts").get().await()
+        val posts = snapshot.documents.map { doc ->
+            Post(
+                id = doc.id,
+                title = doc.getString("title").orEmpty(),
+                text = doc.getString("text").orEmpty(),
+                rating = (doc.getDouble("rating") ?: 0.0).toFloat(),
+                userId = doc.getString("userId").orEmpty(),
+                userName = doc.getString("userName").orEmpty(),
+                imageUrl = doc.getString("imageUrl").orEmpty(),
+                createdAt = doc.getLong("createdAt") ?: 0L,
+            )
+        }
+        postDao.upsertAll(posts.map { it.toEntity() })
+    }
+
+    suspend fun deletePostById(postId: String) {
+        postDao.deleteById(postId)
+    }
 }
-
-private fun Post.toEntity(): PostEntity =
-    PostEntity(
-        id = id,
-        title = title,
-        text = text,
-        rating = rating,
-        userId = userId,
-        userName = userName,
-        imageUrl = imageUrl,
-        createdAt = createdAt
-    )
-
-private fun PostEntity.toPost(): Post =
-    Post(
-        id = id,
-        title = title,
-        text = text,
-        rating = rating,
-        userId = userId,
-        userName = userName,
-        imageUrl = imageUrl,
-        createdAt = createdAt,
-       )
