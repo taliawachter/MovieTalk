@@ -144,6 +144,7 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                         title = title,
                         text = text,
                         rating = rating,
+                        userId = uid, // Ensure userId is set
                         userName = username,
                         imageUrl = selectedImageUri?.toString() ?: "",
                         createdAt = System.currentTimeMillis(),

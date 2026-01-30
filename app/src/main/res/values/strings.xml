@@ -1,4 +1,18 @@
 <resources>
+        <string name="posted_by">Posted by %1$s</string>
+        <string name="edit">Edit</string>
+        <string name="delete">Delete</string>
+        <string name="delete_post_title">Delete post?</string>
+        <string name="delete_post_message">This cannot be undone.</string>
+        <string name="delete_failed">Delete failed</string>
+        <string name="deleted">Deleted</string>
+        <string name="cancel">Cancel</string>
+        <string name="post_not_found">Post not found</string>
+        <string name="failed_to_load_post">Failed to load post</string>
+        <string name="user">User</string>
+        <string name="year_colon">Year: %1$s</string>
+        <string name="genre_colon">Genre: %1$s</string>
+        <string name="actors_colon">Actors: %1$s</string>
     <string name="app_name">MovieTalk</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
