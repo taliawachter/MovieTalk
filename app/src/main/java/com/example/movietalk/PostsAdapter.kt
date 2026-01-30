@@ -8,10 +8,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
+import android.widget.RatingBar
 
 class PostsAdapter(
     private val onPostClick: (Post) -> Unit,
-    private val onLikeClick: (Post) -> Unit
 ) : RecyclerView.Adapter<PostsAdapter.VH>() {
 
     private val items = mutableListOf<Post>()
@@ -25,7 +25,7 @@ class PostsAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         val v = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_post, parent, false)
-        return VH(v, onPostClick, onLikeClick)
+        return VH(v, onPostClick)
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
@@ -37,23 +37,18 @@ class PostsAdapter(
     class VH(
         itemView: View,
         private val onPostClick: (Post) -> Unit,
-        private val onLikeClick: (Post) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
 
+        private val ratingBar: RatingBar = itemView.findViewById(R.id.ratingBar)
         private val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
         private val tvDesc: TextView = itemView.findViewById(R.id.tvDesc)
         private val tvUsername: TextView = itemView.findViewById(R.id.tvUsername)
         private val imgPost: ImageView = itemView.findViewById(R.id.imgPost)
-
-        private val tvLikes: TextView = itemView.findViewById(R.id.tvLikes)
-        private val ivLike: ImageView = itemView.findViewById(R.id.ivLike)
-
         fun bind(post: Post) {
             tvTitle.text = if (post.title.isNotBlank()) post.title else "Untitled"
             tvDesc.text = post.text
             tvUsername.text = if (post.userName.isNotBlank()) post.userName else "User"
-
-            tvLikes.text = post.likesCount.toString()
+            ratingBar.rating = post.rating.toFloat()
 
             val value = post.imageUrl.trim()
             if (value.isBlank()) {
@@ -70,7 +65,6 @@ class PostsAdapter(
             }
 
             itemView.setOnClickListener { onPostClick(post) }
-            ivLike.setOnClickListener { onLikeClick(post) }
         }
     }
 }

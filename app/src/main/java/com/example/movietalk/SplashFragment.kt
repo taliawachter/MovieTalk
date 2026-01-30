@@ -30,14 +30,19 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
     }
     private fun goNext() {
         val user = FirebaseAuth.getInstance().currentUser
-        val nav = findNavController()
+        if (!isAdded) return
 
-        if (user != null) {
-            // connected -> Home
-            nav.navigate(R.id.action_splashFragment_to_homeFragment)
-        } else {
-            // not connected -> Login (או Register)
-            nav.navigate(R.id.action_splashFragment_to_loginFragment)
+        try {
+            val nav = findNavController()
+            if (user != null) {
+                // connected -> Home
+                nav.navigate(R.id.action_splashFragment_to_homeFragment)
+            } else {
+                // not connected -> Login (או Register)
+                nav.navigate(R.id.action_splashFragment_to_loginFragment)
+            }
+        } catch (e: Exception) {
+            // fallback: ignore navigation failure to avoid app crash
         }
     }
 

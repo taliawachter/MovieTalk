@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.movietalk.data.local.AppDatabase
 import com.example.movietalk.data.repository.PostRepository
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 
@@ -32,16 +31,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 val action = HomeFragmentDirections
                     .actionHomeFragmentToPostDetailsFragment(post.id)
                 findNavController().navigate(action)
-            },
-            onLikeClick = { post ->
-                val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
-                    ?: return@PostsAdapter
-
-                viewLifecycleOwner.lifecycleScope.launch {
-                    try {
-                        repo.toggleLike(post.id, uid)
-                    } catch (_: Exception) { }
-                }
             }
         )
         rv.adapter = postsAdapter
@@ -56,13 +45,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             try {
                 repo.refreshPosts()
             } catch (_: Exception) { }
-        }
-
-        val fab = view.findViewById<FloatingActionButton>(R.id.fabAdd)
-        fab.bringToFront()
-        fab.setOnClickListener {
-            val action = HomeFragmentDirections.actionHomeFragmentToUploadPostFragment()
-            findNavController().navigate(action)
         }
     }
 }

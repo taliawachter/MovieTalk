@@ -12,6 +12,5 @@ data class PostEntity(
     val userId: String,
     val userName: String,
     val imageUrl: String,
-    val createdAt: Long,
-    val likesCount: Int
+    val createdAt: Long
 )
