@@ -35,7 +35,6 @@ class PostRepository(
 }
     suspend fun addPost(post: Post) {
         android.util.Log.d("PostRepository", "addPost called with id=${post.id}")
-        
         // Save to local database first (this always works)
         try {
             android.util.Log.d("PostRepository", "Writing to local DB...")
@@ -50,7 +49,7 @@ class PostRepository(
         try {
             android.util.Log.d("PostRepository", "Syncing to Firestore in background...")
             val data = hashMapOf(
-                "id" to post.id,
+                // Do NOT include "id" field, Firestore document ID is the source of truth
                 "title" to post.title,
                 "text" to post.text,
                 "rating" to post.rating,

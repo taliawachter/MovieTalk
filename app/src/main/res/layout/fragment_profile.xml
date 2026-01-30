@@ -11,8 +11,6 @@
         android:id="@+id/ivAvatar"
         android:layout_width="90dp"
         android:layout_height="90dp"
-        android:src="@drawable/ic_profile"
-        android:tint="@color/red"
         android:contentDescription="avatar" />
 
     <TextView

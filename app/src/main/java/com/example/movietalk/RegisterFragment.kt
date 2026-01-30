@@ -1,5 +1,10 @@
 package com.example.movietalk
 
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+
+import android.content.Intent
+
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -13,9 +18,17 @@ import com.google.firebase.auth.FirebaseAuth
 
 class RegisterFragment : Fragment(R.layout.fragment_register) {
     private var selectedProfileUri: android.net.Uri? = null
+    // No Firebase Storage needed
 
-    private val pickImageLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri: android.net.Uri? ->
+    private val pickImageLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.OpenDocument()) { uri: android.net.Uri? ->
         uri?.let {
+            // Persist URI permission so we can access it later for upload
+            try {
+                requireContext().contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (_: Exception) {}
             selectedProfileUri = it
             view?.findViewById<android.widget.ImageView>(R.id.imgProfile)?.setImageURI(it)
         }
@@ -33,7 +46,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
 
         val btnSelectProfilePic = view.findViewById<Button>(R.id.btnSelectProfilePic)
         btnSelectProfilePic.setOnClickListener {
-            pickImageLauncher.launch("image/*")
+            pickImageLauncher.launch(arrayOf("image/*"))
         }
 
         tvGoLogin.setOnClickListener {
@@ -62,13 +75,31 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
             android.util.Log.d("RegisterFragment", "Attempting registration...")
 
             auth.createUserWithEmailAndPassword(email, password)
-                .addOnSuccessListener {
-                    Toast.makeText(requireContext(), "Registration successful!", Toast.LENGTH_SHORT).show()
-                    android.util.Log.d("RegisterFragment", "Registration success, navigating to home")
-                    val options = navOptions {
-                        popUpTo(R.id.registerFragment) { inclusive = true }
+                .addOnSuccessListener { authResult ->
+                    val user = authResult.user
+                    if (user != null) {
+                        val localDb = com.example.movietalk.data.local.AppDatabase.getInstance(requireContext())
+                        val userDao = localDb.userDao()
+                        val username = email.substringBefore("@")
+                        val profileUriString = selectedProfileUri?.toString()
+                        // Save user info and image URI to Room
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            userDao.upsertUser(
+                                com.example.movietalk.data.local.UserEntity(
+                                    uid = user.uid,
+                                    email = email,
+                                    username = username,
+                                    profileImageUri = profileUriString
+                                )
+                            )
+                            Toast.makeText(requireContext(), "Registration successful!", Toast.LENGTH_SHORT).show()
+                            android.util.Log.d("RegisterFragment", "Registration and local image URI saved, navigating to home")
+                            val options = navOptions {
+                                popUpTo(R.id.registerFragment) { inclusive = true }
+                            }
+                            findNavController().navigate(R.id.action_registerFragment_to_homeFragment, null, options)
+                        }
                     }
-                    findNavController().navigate(R.id.action_registerFragment_to_homeFragment, null, options)
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(requireContext(), e.message ?: "Register failed", Toast.LENGTH_SHORT).show()

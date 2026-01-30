@@ -138,7 +138,15 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                         etTitle.setText("")
                         etText.setText("")
                         ratingBar.rating = 0f
-                        selectedImageUri = null
+                                    android.util.Log.d("UploadPost", "addPost completed")
+                                    // Always refresh posts after upload to ensure local list is up to date
+                                    android.util.Log.d("UploadPost", "Refreshing posts...")
+                                    try {
+                                        repo.refreshPosts()
+                                        android.util.Log.d("UploadPost", "refreshPosts completed")
+                                    } catch (refreshException: Exception) {
+                                        android.util.Log.e("UploadPost", "refreshPosts failed", refreshException)
+                                    }
                         ivPreview.apply {
                             setImageDrawable(null)
                             visibility = View.GONE

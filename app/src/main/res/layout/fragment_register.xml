@@ -88,8 +88,8 @@
 
             <ImageView
                 android:id="@+id/imgProfile"
-                android:layout_width="96dp"
-                android:layout_height="96dp"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
                 android:src="@drawable/ic_profile_placeholder"
                 android:background="@drawable/circle_background"
                 android:scaleType="centerCrop"
@@ -101,7 +101,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Select Profile Picture"
-                android:layout_marginTop="8dp"/>
+                android:layout_marginTop="8dp"
+                app:backgroundTint="@color/red"/>
         </LinearLayout>
 
             <EditText
