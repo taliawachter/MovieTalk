@@ -1,5 +1,7 @@
 package com.example.movietalk
 
+import kotlinx.coroutines.withContext
+
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -17,6 +19,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
 class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
+    // OMDb API setup
+    private val omdbApiKey = "a64aa4bd"
+    private val omdbApiService by lazy {
+        retrofit2.Retrofit.Builder()
+            .baseUrl("https://www.omdbapi.com")
+            .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
+            .build()
+            .create(com.example.movietalk.data.api.OmdbApiService::class.java)
+    }
 
     private val auth by lazy { FirebaseAuth.getInstance() }
 
@@ -38,6 +49,39 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
         }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        // OMDb UI elements
+        val etOmdbTitle = view.findViewById<EditText>(R.id.etOmdbTitle)
+        val btnFetchOmdb = view.findViewById<Button>(R.id.btnFetchOmdb)
+        val tvOmdbYear = view.findViewById<TextView>(R.id.tvOmdbYear)
+        val tvOmdbGenre = view.findViewById<TextView>(R.id.tvOmdbGenre)
+        val tvOmdbActors = view.findViewById<TextView>(R.id.tvOmdbActors)
+
+        btnFetchOmdb.setOnClickListener {
+            val omdbTitle = etOmdbTitle.text?.toString()?.trim().orEmpty()
+            if (omdbTitle.isEmpty()) {
+                etOmdbTitle.error = "Enter a movie title"
+                return@setOnClickListener
+            }
+            tvOmdbYear.text = "Year: ..."
+            tvOmdbGenre.text = "Genre: ..."
+            tvOmdbActors.text = "Actors: ..."
+            // Fetch from OMDb
+            lifecycleScope.launch {
+                try {
+                    val response = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        omdbApiService.getMovieByTitle(omdbTitle, omdbApiKey).execute()
+                    }
+                    val movie = response.body()
+                    tvOmdbYear.text = "Year: ${movie?.Year ?: "Not found"}"
+                    tvOmdbGenre.text = "Genre: ${movie?.Genre ?: "Not found"}"
+                    tvOmdbActors.text = "Actors: ${movie?.Actors ?: "Not found"}"
+                } catch (e: Exception) {
+                    tvOmdbYear.text = "Year: Error"
+                    tvOmdbGenre.text = "Genre: Error"
+                    tvOmdbActors.text = "Actors: Error"
+                }
+            }
+        }
         super.onViewCreated(view, savedInstanceState)
 
         val localDb = AppDatabase.getInstance(requireContext())
@@ -54,7 +98,6 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
 
         // Reset form fields and preview when fragment is viewed
         etTitle.setText("")
-        etText.setText("")
         ratingBar.rating = 0f
         selectedImageUri = null
         ivPreview.apply {
@@ -95,16 +138,14 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
             requireActivity().lifecycleScope.launch {
                 try {
                     android.util.Log.d("UploadPost", "Starting post creation...")
-                    val imageUrl = selectedImageUri?.toString().orEmpty()
 
                     val postObj = Post(
                         id = id,
                         title = title,
                         text = text,
                         rating = rating,
-                        userId = uid,
                         userName = username,
-                        imageUrl = imageUrl,
+                        imageUrl = selectedImageUri?.toString() ?: "",
                         createdAt = System.currentTimeMillis(),
                     )
 
@@ -116,12 +157,11 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                         if (result == null) {
                             throw Exception("Firestore write timeout - operation took too long")
                         }
-                        android.util.Log.d("UploadPost", "addPost completed")
                     } catch (addException: Exception) {
                         android.util.Log.e("UploadPost", "addPost failed", addException)
                         throw addException
                     }
-                    
+
                     android.util.Log.d("UploadPost", "Refreshing posts...")
                     try {
                         repo.refreshPosts()
@@ -133,20 +173,25 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
 
                     android.util.Log.d("UploadPost", "Post uploaded successfully!")
                     if (isAdded) {
-                        Toast.makeText(requireContext(), "Post uploaded!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Post uploaded!", Toast.LENGTH_SHORT)
+                            .show()
 
                         etTitle.setText("")
                         etText.setText("")
                         ratingBar.rating = 0f
-                                    android.util.Log.d("UploadPost", "addPost completed")
-                                    // Always refresh posts after upload to ensure local list is up to date
-                                    android.util.Log.d("UploadPost", "Refreshing posts...")
-                                    try {
-                                        repo.refreshPosts()
-                                        android.util.Log.d("UploadPost", "refreshPosts completed")
-                                    } catch (refreshException: Exception) {
-                                        android.util.Log.e("UploadPost", "refreshPosts failed", refreshException)
-                                    }
+                        android.util.Log.d("UploadPost", "addPost completed")
+                        // Always refresh posts after upload to ensure local list is up to date
+                        android.util.Log.d("UploadPost", "Refreshing posts...")
+                        try {
+                            repo.refreshPosts()
+                            android.util.Log.d("UploadPost", "refreshPosts completed")
+                        } catch (refreshException: Exception) {
+                            android.util.Log.e(
+                                "UploadPost",
+                                "refreshPosts failed",
+                                refreshException
+                            )
+                        }
                         ivPreview.apply {
                             setImageDrawable(null)
                             visibility = View.GONE
@@ -154,7 +199,7 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
 
                         android.util.Log.d("UploadPost", "Waiting before navigation...")
                         kotlinx.coroutines.delay(1000)
-                        
+
                         android.util.Log.d("UploadPost", "isAdded=$isAdded, view=$view")
                         if (isAdded && view != null) {
                             try {
@@ -163,7 +208,11 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                                 android.util.Log.d("UploadPost", "Navigation successful!")
                             } catch (navException: Exception) {
                                 android.util.Log.e("UploadPost", "Navigation failed", navException)
-                                Toast.makeText(requireContext(), "Navigation error: ${navException.message}", Toast.LENGTH_LONG).show()
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Navigation error: ${navException.message}",
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
                         } else {
                             android.util.Log.e("UploadPost", "Cannot navigate: isAdded=$isAdded")
@@ -183,5 +232,12 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                 }
             }
         }
+            // Scroll to bottom to reveal hidden button after layout is drawn
+            view.post {
+                val scrollView = view.parent as? ScrollView
+                scrollView?.post {
+                    scrollView.fullScroll(View.FOCUS_DOWN)
+                }
+            }
     }
 }
