@@ -41,10 +41,12 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         val btnEdit = view.findViewById<android.widget.ImageButton>(R.id.btnEdit)
                 val rvUserPosts = view.findViewById<RecyclerView>(R.id.rvUserPosts)
                 rvUserPosts.layoutManager = LinearLayoutManager(requireContext())
-                val postsAdapter = PostsAdapter(onPostClick = { /* Optionally handle post click */ })
-                rvUserPosts.adapter = postsAdapter
+        val postsAdapter = PostsAdapter(onPostClick = { post ->
+            val action = ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post.id)
+            findNavController().navigate(action)
+        })
+        rvUserPosts.adapter = postsAdapter
 
-                // Observe only current user's posts
                 viewModel.userPosts.observe(viewLifecycleOwner, Observer { posts ->
                     postsAdapter.submitList(posts)
                 })
@@ -56,7 +58,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         val uid = user?.uid
         tvEmail.text = email ?: ""
 
-        // Load displayName and photoUrl from Firestore
         if (uid != null) {
             firestore.collection("users").document(uid).get().addOnSuccessListener { doc ->
                 val displayName = doc.getString("displayName") ?: email?.substringBefore("@") ?: "MovieTalk user"
@@ -81,9 +82,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             tvName.text = "MovieTalk user"
             ivAvatar.setImageResource(R.drawable.ic_profile)
         }
-
-        // ...existing code...
-
+        
         btnEdit.setOnClickListener {
             findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
         }
