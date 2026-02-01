@@ -10,7 +10,6 @@ data class PostEntity(
     val text: String,
     val rating: Float,
     val userId: String,
-    val userName: String,
     val imageUrl: String,
     val createdAt: Long
 )

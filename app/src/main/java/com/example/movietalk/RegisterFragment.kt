@@ -39,6 +39,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val etUsername = view.findViewById<EditText>(R.id.etRegisterUsername)
         val etEmail = view.findViewById<EditText>(R.id.etRegisterEmail)
         val etPassword = view.findViewById<EditText>(R.id.etRegisterPassword)
         val btnRegister = view.findViewById<Button>(R.id.btnRegister)
@@ -54,12 +55,13 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         }
 
         btnRegister.setOnClickListener {
+            val username = etUsername.text.toString().trim()
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString()
 
-            android.util.Log.d("RegisterFragment", "Register button clicked: email=$email")
+            android.util.Log.d("RegisterFragment", "Register button clicked: email=$email username=$username")
 
-            if (email.isEmpty() || password.isEmpty()) {
+            if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
                 android.util.Log.e("RegisterFragment", "Empty fields")
                 return@setOnClickListener
@@ -76,11 +78,10 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
 
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnSuccessListener { authResult ->
-                    val user = authResult.user
+                    val user = authResult.user;
                     if (user != null) {
                         val localDb = com.example.movietalk.data.local.AppDatabase.getInstance(requireContext())
                         val userDao = localDb.userDao()
-                        val username = email.substringBefore("@")
                         val profileUriString = selectedProfileUri?.toString()
                         // Save user info and image URI to Room
                         viewLifecycleOwner.lifecycleScope.launch {
@@ -92,12 +93,25 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                                     profileImageUri = profileUriString
                                 )
                             )
-                            Toast.makeText(requireContext(), "Registration successful!", Toast.LENGTH_SHORT).show()
-                            android.util.Log.d("RegisterFragment", "Registration and local image URI saved, navigating to home")
-                            val options = navOptions {
-                                popUpTo(R.id.registerFragment) { inclusive = true }
-                            }
-                            findNavController().navigate(R.id.action_registerFragment_to_homeFragment, null, options)
+                            // Save to Firestore: users/{uid} = { email, username }
+                            val userData = hashMapOf(
+                                "email" to email,
+                                "username" to username
+                            )
+                            com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                                .collection("users").document(user.uid)
+                                .set(userData, com.google.firebase.firestore.SetOptions.merge())
+                                .addOnSuccessListener {
+                                    Toast.makeText(requireContext(), "Registration successful!", Toast.LENGTH_SHORT).show()
+                                    android.util.Log.d("RegisterFragment", "Registration and Firestore user saved, navigating to home")
+                                    val options = navOptions {
+                                        popUpTo(R.id.registerFragment) { inclusive = true }
+                                    }
+                                    findNavController().navigate(R.id.action_registerFragment_to_homeFragment, null, options)
+                                }
+                                .addOnFailureListener { e ->
+                                    Toast.makeText(requireContext(), "Failed to save user profile: ${e.message}", Toast.LENGTH_SHORT).show()
+                                }
                         }
                     }
                 }

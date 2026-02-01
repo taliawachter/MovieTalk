@@ -21,46 +21,25 @@ class EditProfileViewModel(app: Application) : AndroidViewModel(app) {
     private val _loading = MutableLiveData<Boolean>(false)
     val loading: LiveData<Boolean> = _loading
 
-    private val _profileImageUrl = MutableLiveData<String?>(null)
-    val profileImageUrl: LiveData<String?> = _profileImageUrl
-
-    private val _displayName = MutableLiveData<String>("")
-    val displayName: LiveData<String> = _displayName
+    private val _username = MutableLiveData<String>("")
+    val username: LiveData<String> = _username
 
     fun loadProfile() {
         val uid = auth.currentUser?.uid ?: return
         _loading.value = true
         firestore.collection("users").document(uid).get().addOnSuccessListener { doc ->
-            _displayName.value = doc.getString("displayName") ?: auth.currentUser?.email?.substringBefore("@") ?: ""
-            _profileImageUrl.value = doc.getString("photo")
+            _username.value = doc.getString("username") ?: ""
             _loading.value = false
         }.addOnFailureListener {
             _loading.value = false
         }
     }
 
-    fun encodeImageToBase64(uri: Uri, onResult: (String?) -> Unit) {
-        try {
-            val context = getApplication<Application>().applicationContext
-            val inputStream = context.contentResolver.openInputStream(uri)
-            val bitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
-            inputStream?.close()
-            val outputStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
-            val byteArray = outputStream.toByteArray()
-            val base64String = Base64.encodeToString(byteArray, Base64.DEFAULT)
-            onResult(base64String)
-        } catch (e: Exception) {
-            onResult(null)
-        }
-    }
-
-    fun saveProfile(displayName: String, photoBase64: String?, onComplete: (Boolean) -> Unit) {
+    fun saveUsername(username: String, onComplete: (Boolean) -> Unit) {
         val uid = auth.currentUser?.uid ?: return onComplete(false)
         _loading.value = true
-        val data = hashMapOf<String, Any>("displayName" to displayName)
-        if (!photoBase64.isNullOrBlank()) data["photo"] = photoBase64
-        firestore.collection("users").document(uid).set(data)
+        val data = hashMapOf<String, Any>("username" to username)
+        firestore.collection("users").document(uid).set(data, com.google.firebase.firestore.SetOptions.merge())
             .addOnSuccessListener { _loading.value = false; onComplete(true) }
             .addOnFailureListener { _loading.value = false; onComplete(false) }
     }

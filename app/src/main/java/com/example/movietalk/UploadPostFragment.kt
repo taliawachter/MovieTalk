@@ -128,7 +128,6 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                 return@setOnClickListener
             }
 
-            val username = user.email?.substringBefore("@") ?: "User"
             val rating = ratingBar.rating
             val id = FirebaseFirestore.getInstance().collection("posts").document().id
 
@@ -145,7 +144,6 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                         text = text,
                         rating = rating,
                         userId = uid, // Ensure userId is set
-                        userName = username,
                         imageUrl = selectedImageUri?.toString() ?: "",
                         createdAt = System.currentTimeMillis(),
                     )

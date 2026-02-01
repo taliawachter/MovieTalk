@@ -39,18 +39,18 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         val tvEmail = view.findViewById<TextView>(R.id.tvEmail)
         val btnLogout = view.findViewById<android.widget.ImageButton>(R.id.btnLogout)
         val btnEdit = view.findViewById<android.widget.ImageButton>(R.id.btnEdit)
-                val rvUserPosts = view.findViewById<RecyclerView>(R.id.rvUserPosts)
-                rvUserPosts.layoutManager = LinearLayoutManager(requireContext())
+        val rvUserPosts = view.findViewById<RecyclerView>(R.id.rvUserPosts)
+        rvUserPosts.layoutManager = LinearLayoutManager(requireContext())
         val postsAdapter = PostsAdapter(onPostClick = { post ->
             val action = ProfileFragmentDirections.actionProfileFragmentToPostDetailsFragment(post.id)
             findNavController().navigate(action)
         })
         rvUserPosts.adapter = postsAdapter
 
-                viewModel.userPosts.observe(viewLifecycleOwner, Observer { posts ->
-                    postsAdapter.submitList(posts)
-                })
-                viewModel.loadUserPosts()
+        viewModel.userPosts.observe(viewLifecycleOwner, Observer { posts ->
+            postsAdapter.submitList(posts)
+        })
+        viewModel.loadUserPosts()
         val ivAvatar = view.findViewById<android.widget.ImageView>(R.id.ivAvatar)
 
         val user = FirebaseAuth.getInstance().currentUser
@@ -59,25 +59,28 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         tvEmail.text = email ?: ""
 
         if (uid != null) {
-            firestore.collection("users").document(uid).get().addOnSuccessListener { doc ->
-                val displayName = doc.getString("displayName") ?: email?.substringBefore("@") ?: "MovieTalk user"
-                val photoBase64 = doc.getString("photo")
-                tvName.text = displayName
-                if (!photoBase64.isNullOrBlank()) {
-                    try {
-                        val imageBytes = android.util.Base64.decode(photoBase64, android.util.Base64.DEFAULT)
-                        val bitmap = android.graphics.BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                        ivAvatar.setImageBitmap(bitmap)
-                    } catch (e: Exception) {
+            firestore.collection("users").document(uid)
+                .addSnapshotListener { doc, _ ->
+                    if (doc != null && doc.exists()) {
+                        val username = doc.getString("username") ?: "MovieTalk user"
+                        val photoBase64 = doc.getString("photo")
+                        tvName.text = username
+                        if (!photoBase64.isNullOrBlank()) {
+                            try {
+                                val imageBytes = android.util.Base64.decode(photoBase64, android.util.Base64.DEFAULT)
+                                val bitmap = android.graphics.BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                                ivAvatar.setImageBitmap(bitmap)
+                            } catch (e: Exception) {
+                                ivAvatar.setImageResource(R.drawable.ic_profile)
+                            }
+                        } else {
+                            ivAvatar.setImageResource(R.drawable.ic_profile)
+                        }
+                    } else {
+                        tvName.text = "MovieTalk user"
                         ivAvatar.setImageResource(R.drawable.ic_profile)
                     }
-                } else {
-                    ivAvatar.setImageResource(R.drawable.ic_profile)
                 }
-            }.addOnFailureListener {
-                tvName.text = email?.substringBefore("@") ?: "MovieTalk user"
-                ivAvatar.setImageResource(R.drawable.ic_profile)
-            }
         } else {
             tvName.text = "MovieTalk user"
             ivAvatar.setImageResource(R.drawable.ic_profile)

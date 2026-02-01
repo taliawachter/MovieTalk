@@ -38,7 +38,6 @@ class PostRepository(
                 "text" to post.text,
                 "rating" to post.rating,
                 "userId" to post.userId,
-                "userName" to post.userName,
                 "imageUrl" to post.imageUrl,
                 "createdAt" to post.createdAt
             )
@@ -68,7 +67,6 @@ class PostRepository(
                 text = doc.getString("text").orEmpty(),
                 rating = (doc.getDouble("rating") ?: 0.0).toFloat(),
                 userId = doc.getString("userId").orEmpty(),
-                userName = doc.getString("userName").orEmpty(),
                 imageUrl = doc.getString("imageUrl").orEmpty(),
                 createdAt = doc.getLong("createdAt") ?: 0L,
             )

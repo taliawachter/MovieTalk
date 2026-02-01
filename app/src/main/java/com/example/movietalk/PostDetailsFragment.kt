@@ -71,7 +71,21 @@ class PostDetailsFragment : Fragment() {
                 currentOwnerId = doc.getString("userId")
                 currentTitle = doc.getString("title").orEmpty()
                 currentRating = (doc.getDouble("rating") ?: 0.0).toFloat()
-                val userName = doc.getString("userName") ?: getString(R.string.user)
+
+                // Fetch username from users/{userId}
+                val userId = currentOwnerId
+                if (!userId.isNullOrBlank()) {
+                    db.collection("users").document(userId).get()
+                        .addOnSuccessListener { userDoc ->
+                            val userName = userDoc.getString("username") ?: getString(R.string.user)
+                            binding.tvPostAuthor.text = getString(R.string.posted_by, userName)
+                        }
+                        .addOnFailureListener {
+                            binding.tvPostAuthor.text = getString(R.string.posted_by, getString(R.string.user))
+                        }
+                } else {
+                    binding.tvPostAuthor.text = getString(R.string.posted_by, getString(R.string.user))
+                }
 
                 // Image
                 if (!currentImageUrl.isNullOrBlank()) {
@@ -85,11 +99,7 @@ class PostDetailsFragment : Fragment() {
                 binding.ratingBar.rating = currentRating
                 binding.tvPostText.text = currentText
 
-                // Author
-                binding.tvPostAuthor.text = getString(R.string.posted_by, userName)
-
                 // Owner actions
-
                 val currentUserUid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
                 val isOwner = currentOwnerId != null && currentUserUid == currentOwnerId
                 android.util.Log.d("PostDetails", "currentOwnerId=$currentOwnerId, currentUserUid=$currentUserUid, isOwner=$isOwner")

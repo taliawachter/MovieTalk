@@ -6,8 +6,7 @@ data class Post(
     val text: String = "",
     val rating: Float = 0f,
     val userId: String = "",
-    val userName: String = "",
     val imageUrl: String = "",
     val createdAt: Long = 0L,
-    )
+)
 

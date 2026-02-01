@@ -47,8 +47,25 @@ class PostsAdapter(
         fun bind(post: Post) {
             tvTitle.text = if (post.title.isNotBlank()) post.title else "Untitled"
             tvDesc.text = post.text
-            tvUsername.text = if (post.userName.isNotBlank()) post.userName else "User"
             ratingBar.rating = post.rating.toFloat()
+
+            // Fetch username from Firestore
+            tvUsername.text = "..."
+            val userId = post.userId
+            if (userId.isNotBlank()) {
+                val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                db.collection("users").document(userId)
+                    .get()
+                    .addOnSuccessListener { doc ->
+                        val username = doc.getString("username") ?: "User"
+                        tvUsername.text = username
+                    }
+                    .addOnFailureListener {
+                        tvUsername.text = "User"
+                    }
+            } else {
+                tvUsername.text = "User"
+            }
 
             val value = post.imageUrl.trim()
             if (value.isBlank()) {

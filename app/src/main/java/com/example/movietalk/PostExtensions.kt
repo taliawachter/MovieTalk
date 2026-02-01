@@ -10,7 +10,6 @@ fun Post.toEntity(): PostEntity =
         text = text,
         rating = rating,
         userId = userId,
-        userName = userName,
         imageUrl = imageUrl,
         createdAt = createdAt
     )
@@ -23,7 +22,6 @@ fun PostEntity.toPost(): Post =
         text = text,
         rating = rating,
         userId = userId,
-        userName = userName,
         imageUrl = imageUrl,
         createdAt = createdAt
     )
