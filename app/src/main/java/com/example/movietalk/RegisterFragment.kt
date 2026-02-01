@@ -93,11 +93,25 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                                     profileImageUri = profileUriString
                                 )
                             )
-                            // Save to Firestore: users/{uid} = { email, username }
+                            // Save to Firestore: users/{uid} = { email, username, photo }
                             val userData = hashMapOf(
                                 "email" to email,
                                 "username" to username
                             )
+                            if (selectedProfileUri != null) {
+                                try {
+                                    val inputStream = requireContext().contentResolver.openInputStream(selectedProfileUri!!)
+                                    val bitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
+                                    inputStream?.close()
+                                    val outputStream = java.io.ByteArrayOutputStream()
+                                    bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, outputStream)
+                                    val byteArray = outputStream.toByteArray()
+                                    val base64String = android.util.Base64.encodeToString(byteArray, android.util.Base64.DEFAULT)
+                                    userData["photo"] = base64String
+                                } catch (e: Exception) {
+                                    android.util.Log.e("RegisterFragment", "Failed to encode profile image", e)
+                                }
+                            }
                             com.google.firebase.firestore.FirebaseFirestore.getInstance()
                                 .collection("users").document(user.uid)
                                 .set(userData, com.google.firebase.firestore.SetOptions.merge())
