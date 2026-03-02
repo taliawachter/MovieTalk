@@ -126,14 +126,27 @@
                 android:textColor="@android:color/white"
                 android:textColorHint="#80FFFFFF" />
 
-            <Button
-                android:id="@+id/btnRegister"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Create Account"
-                android:textColor="@color/white"
-                app:backgroundTint="@color/red" />
+                android:layout_marginTop="16dp">
+
+                <Button
+                    android:id="@+id/btnRegister"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Create Account"
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/red" />
+
+                <ProgressBar
+                    android:id="@+id/pbRegisterSmall"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/tvGoLogin"

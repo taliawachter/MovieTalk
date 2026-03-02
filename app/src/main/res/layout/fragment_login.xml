@@ -105,15 +105,27 @@
                 android:textColor="@android:color/white"
                 android:textColorHint="#80FFFFFF" />
 
-            <Button
-                android:id="@+id/btnLogin"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Sign In"
-                android:textColor="@color/white"
-                app:backgroundTint="@color/red" />
+                android:layout_marginTop="16dp">
 
+                <Button
+                    android:id="@+id/btnLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Sign In"
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/red" />
+
+                <ProgressBar
+                    android:id="@+id/pbLoginSmall"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:visibility="gone"
+                    android:layout_gravity="center"
+                    style="?android:attr/progressBarStyleSmall"/>
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/logintosingup"
