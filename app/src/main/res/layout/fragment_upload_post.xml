@@ -135,6 +135,8 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="12dp"
             app:boxBackgroundMode="outline"
             app:boxStrokeColor="@color/gray"
             app:boxStrokeWidth="1dp"
@@ -145,7 +147,12 @@
                 android:id="@+id/etTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Title..."
+                android:hint="Movie title (from API)"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:clickable="true"
+                android:cursorVisible="false"
+                android:inputType="none"
                 android:padding="14dp"
                 android:textColor="@color/white"
                 android:textColorHint="@color/gray" />
@@ -158,7 +165,7 @@
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="2dp"
             android:layout_marginBottom="8dp" />
 
         <com.google.android.material.textfield.TextInputLayout

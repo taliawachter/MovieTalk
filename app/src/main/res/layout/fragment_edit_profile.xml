@@ -1,53 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@android:color/black"
-    android:padding="24dp"
-    android:gravity="center_horizontal">
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:outlineSpotShadowColor="@color/red"
+    android:padding="24dp">
 
     <ImageView
         android:id="@+id/ivEditAvatar"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_gravity="center_horizontal"
-        android:contentDescription="Profile picture"
-        android:src="@drawable/ic_profile"
+        android:layout_marginTop="24dp"
         android:background="@drawable/circle_background"
+        android:contentDescription="Profile picture"
         android:scaleType="centerCrop"
-        android:layout_marginTop="24dp" />
+        android:src="@drawable/ic_profile" />
 
     <Button
         android:id="@+id/btnPickImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Change Photo"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/red"
+        android:text="Change Photo" />
 
     <EditText
         android:id="@+id/etDisplayName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:backgroundTint="@android:color/white"
         android:hint="Display Name"
         android:textColor="@android:color/white"
-        android:textColorHint="#B3FFFFFF"
-        android:backgroundTint="@android:color/white"
-        android:layout_marginTop="24dp" />
+        android:textColorHint="#B3FFFFFF" />
 
     <Button
         android:id="@+id/btnSaveProfile"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         android:text="Save"
-        android:layout_marginTop="32dp" />
+        android:backgroundTint="@color/red" />
 
     <ProgressBar
         android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:visibility="gone"
-        style="?android:attr/progressBarStyleLarge" />
+        android:visibility="gone" />
 </LinearLayout>

@@ -33,6 +33,7 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
 
     private var selectedImageUri: Uri? = null
     private lateinit var repo: PostRepository
+    private var fetchedMovieTitle: String? = null
 
     private val pickImage =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -55,6 +56,16 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
         val tvOmdbYear = view.findViewById<TextView>(R.id.tvOmdbYear)
         val tvOmdbGenre = view.findViewById<TextView>(R.id.tvOmdbGenre)
         val tvOmdbActors = view.findViewById<TextView>(R.id.tvOmdbActors)
+        val etTitle = view.findViewById<EditText>(R.id.etTitle)
+
+        etTitle.setOnClickListener {
+            val title = fetchedMovieTitle?.trim().orEmpty()
+            androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Movie title")
+                .setMessage(if (title.isNotEmpty()) title else "No movie selected")
+                .setPositiveButton("OK", null)
+                .show()
+        }
 
         btnFetchOmdb.setOnClickListener {
             val omdbTitle = etOmdbTitle.text?.toString()?.trim().orEmpty()
@@ -72,10 +83,14 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                         omdbApiService.getMovieByTitle(omdbTitle, omdbApiKey).execute()
                     }
                     val movie = response.body()
+                    fetchedMovieTitle = movie?.Title?.trim().orEmpty().ifBlank { null }
+                    etTitle.setText(fetchedMovieTitle.orEmpty())
+                    etTitle.setSelection(etTitle.text?.length ?: 0)
                     tvOmdbYear.text = "Year: ${movie?.Year ?: "Not found"}"
                     tvOmdbGenre.text = "Genre: ${movie?.Genre ?: "Not found"}"
                     tvOmdbActors.text = "Actors: ${movie?.Actors ?: "Not found"}"
                 } catch (e: Exception) {
+                    fetchedMovieTitle = null
                     tvOmdbYear.text = "Year: Error"
                     tvOmdbGenre.text = "Genre: Error"
                     tvOmdbActors.text = "Actors: Error"
@@ -90,13 +105,13 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
         val ivPreview = view.findViewById<ImageView>(R.id.ivPreview)
         val btnPickImage = view.findViewById<Button>(R.id.btnPickImage)
 
-        val etTitle = view.findViewById<EditText>(R.id.etTitle)
         val ratingBar = view.findViewById<RatingBar>(R.id.ratingBar)
         val etText = view.findViewById<EditText>(R.id.etText)
 
         val btnPost = view.findViewById<Button>(R.id.btnPost)
 
         // Reset form fields and preview when fragment is viewed
+        fetchedMovieTitle = null
         etTitle.setText("")
         ratingBar.rating = 0f
         selectedImageUri = null
@@ -110,9 +125,9 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
         }
 
         btnPost.setOnClickListener {
-            val title = etTitle.text?.toString()?.trim().orEmpty()
+            val title = fetchedMovieTitle?.trim().orEmpty()
             if (title.isEmpty()) {
-                etTitle.error = "Write a title"
+                Toast.makeText(requireContext(), "Fetch a movie first", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -177,6 +192,7 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                         Toast.makeText(requireContext(), "Post uploaded!", Toast.LENGTH_SHORT)
                             .show()
 
+                        fetchedMovieTitle = null
                         etTitle.setText("")
                         etText.setText("")
                         ratingBar.rating = 0f

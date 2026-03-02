@@ -68,7 +68,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:text="Choose image"
-                android:textColorLink="@color/red" />
+                android:backgroundTint="@color/red" />
 
             <ImageView
                 android:id="@+id/imgPreview"
@@ -84,7 +84,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Save Changes"
-                android:textColorLink="@color/red" />
+                android:backgroundTint="@color/red" />
         </LinearLayout>
     </ScrollView>
 

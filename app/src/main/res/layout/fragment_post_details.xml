@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
@@ -83,15 +84,18 @@
 
         <RatingBar
             android:id="@+id/ratingBar"
+            style="?android:attr/ratingBarStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:numStars="5"
-            android:stepSize="1.0"
+            android:layout_marginStart="6dp"
+            android:layout_marginTop="4dp"
             android:isIndicator="true"
-            android:layout_marginBottom="12dp"
-            android:progressTint="@color/red"
-            android:secondaryProgressTint="@color/gray"
-            android:backgroundTint="@color/gray" />
+            android:numStars="5"
+            android:scaleX="0.8"
+            android:scaleY="0.8"
+            android:stepSize="0.5"
+            android:visibility="invisible"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/tvPostText"

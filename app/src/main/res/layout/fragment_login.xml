@@ -88,10 +88,10 @@
                 android:id="@+id/etLoginEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@android:color/white"
+                android:backgroundTint="@color/white"
                 android:hint="Email"
                 android:inputType="textEmailAddress"
-                android:textColor="@android:color/white"
+                android:textColor="@color/white"
                 android:textColorHint="#80FFFFFF" />
 
             <EditText
