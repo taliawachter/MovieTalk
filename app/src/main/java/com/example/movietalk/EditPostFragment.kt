@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -46,16 +45,24 @@ class EditPostFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().popBackStack()
+        }
+
         val postId = args.postId
         if (postId.isBlank()) {
             Toast.makeText(requireContext(), "Missing postId", Toast.LENGTH_SHORT).show()
             findNavController().navigateUp()
             return
         }
+
         loadPost(postId)
+
         binding.btnPickImage.setOnClickListener {
             pickImage.launch(arrayOf("image/*"))
         }
+
         binding.btnSaveEdit.setOnClickListener {
             saveEdit(postId)
         }
@@ -74,12 +81,14 @@ class EditPostFragment : Fragment() {
                 binding.etEditText.setText(doc.getString("text") ?: "")
                 binding.rbEditRating.rating = (doc.getDouble("rating") ?: 0.0).toFloat()
                 currentImageUrl = doc.getString("imageUrl")
-                val imgPreview = binding.imgPreview
+
                 if (!currentImageUrl.isNullOrBlank()) {
-                    imgPreview.visibility = View.VISIBLE
-                    Glide.with(this@EditPostFragment).load(currentImageUrl).into(imgPreview)
+                    binding.imgPreview.visibility = View.VISIBLE
+                    Glide.with(this@EditPostFragment)
+                        .load(currentImageUrl)
+                        .into(binding.imgPreview)
                 } else {
-                    imgPreview.visibility = View.GONE
+                    binding.imgPreview.visibility = View.GONE
                 }
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to load post", Toast.LENGTH_SHORT).show()
@@ -98,15 +107,17 @@ class EditPostFragment : Fragment() {
         val newTitle = binding.etEditTitle.text?.toString()?.trim().orEmpty()
         val newText = binding.etEditText.text?.toString()?.trim().orEmpty()
         val newRating = binding.rbEditRating.rating
+
         val updates = hashMapOf<String, Any>(
             "title" to newTitle,
             "text" to newText,
             "rating" to newRating
         )
-        // If a new image was picked, update imageUrl
+
         selectedImageUri?.let { uri ->
             updates["imageUrl"] = uri.toString()
         }
+
         setSaveLoading(true)
         db.collection("posts").document(postId).update(updates)
             .addOnSuccessListener {

@@ -3,25 +3,19 @@ package com.example.movietalk
 
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-
-
 import com.example.movietalk.data.local.AppDatabase
-import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
-        private val firestore = FirebaseFirestore.getInstance()
+    private val firestore = FirebaseFirestore.getInstance()
     private val viewModel: ProfileViewModel by viewModels {
         object : androidx.lifecycle.ViewModelProvider.Factory {
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
@@ -39,16 +33,19 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         val tvEmail = view.findViewById<TextView>(R.id.tvEmail)
         val btnLogout = view.findViewById<android.widget.ImageButton>(R.id.btnLogout)
         val btnEdit = view.findViewById<android.widget.ImageButton>(R.id.btnEdit)
-                val rvUserPosts = view.findViewById<RecyclerView>(R.id.rvUserPosts)
-                rvUserPosts.layoutManager = LinearLayoutManager(requireContext())
-                val postsAdapter = PostsAdapter(onPostClick = { /* Optionally handle post click */ })
-                rvUserPosts.adapter = postsAdapter
+        val rvUserPosts = view.findViewById<RecyclerView>(R.id.rvUserPosts)
+        rvUserPosts.layoutManager = LinearLayoutManager(requireContext())
+        val postsAdapter = PostsAdapter(onPostClick = { post ->
+            val action = ProfileFragmentDirections
+                .actionProfileFragmentToPostDetailsFragment(post.id)
+            findNavController().navigate(action)
+        })
+        rvUserPosts.adapter = postsAdapter
 
-                // Observe only current user's posts
-                viewModel.userPosts.observe(viewLifecycleOwner, Observer { posts ->
-                    postsAdapter.submitList(posts)
-                })
-                viewModel.loadUserPosts()
+        viewModel.userPosts.observe(viewLifecycleOwner, Observer { posts ->
+            postsAdapter.submitList(posts)
+        })
+        viewModel.loadUserPosts()
         val ivAvatar = view.findViewById<android.widget.ImageView>(R.id.ivAvatar)
 
         val user = FirebaseAuth.getInstance().currentUser
@@ -56,7 +53,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         val uid = user?.uid
         tvEmail.text = email ?: ""
 
-        // Load displayName and photoUrl from Firestore
         if (uid != null) {
             firestore.collection("users").document(uid).get().addOnSuccessListener { doc ->
                 val displayName = doc.getString("username")
@@ -84,8 +80,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             tvName.text = "MovieTalk user"
             ivAvatar.setImageResource(R.drawable.ic_profile)
         }
-
-        // ...existing code...
 
         btnEdit.setOnClickListener {
             findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
