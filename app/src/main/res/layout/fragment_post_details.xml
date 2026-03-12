@@ -1,18 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
-    android:fitsSystemWindows="true"
-    android:orientation="vertical">
+    android:fitsSystemWindows="true">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/backimg"
+        android:contentDescription="@null" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/black"
+        android:background="@android:color/transparent"
         app:navigationIcon="@drawable/ic_arrow_back_24"
         app:title="Post Details"
         app:titleTextColor="@color/white" />
@@ -48,38 +63,38 @@
             android:gravity="center"
             android:layout_marginBottom="12dp" />
 
-        <!-- OMDb Movie Info -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@color/black"
-            android:padding="12dp"
-            android:layout_marginBottom="12dp"
             android:layout_marginTop="4dp"
-            android:elevation="2dp">
+            android:layout_marginBottom="12dp"
+            android:elevation="2dp"
+            android:orientation="vertical"
+            android:padding="12dp">
 
             <TextView
                 android:id="@+id/tvOmdbYear"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Year: "
                 android:textColor="@color/white"
-                android:textSize="15sp"
-                android:text="Year: " />
+                android:textSize="15sp" />
+
             <TextView
                 android:id="@+id/tvOmdbGenre"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Genre: "
                 android:textColor="@color/white"
-                android:textSize="15sp"
-                android:text="Genre: " />
+                android:textSize="15sp" />
+
             <TextView
                 android:id="@+id/tvOmdbActors"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Actors: "
                 android:textColor="@color/white"
-                android:textSize="15sp"
-                android:text="Actors: " />
+                android:textSize="15sp" />
         </LinearLayout>
 
         <RatingBar
@@ -146,6 +161,9 @@
                 android:visibility="gone" />
         </LinearLayout>
 
+        </LinearLayout>
+
+    </ScrollView>
+
     </LinearLayout>
-</ScrollView>
-</LinearLayout>
+</FrameLayout>

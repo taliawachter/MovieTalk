@@ -1,13 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:outlineSpotShadowColor="@color/red"
-    android:padding="24dp">
+    android:fitsSystemWindows="true">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/backimg"
+        android:contentDescription="@null" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:outlineSpotShadowColor="@color/red"
+        android:padding="24dp">
 
     <ImageView
         android:id="@+id/ivEditAvatar"
@@ -61,4 +77,5 @@
             android:indeterminateTint="@color/white"
             android:visibility="gone" />
     </FrameLayout>
-</LinearLayout>
+    </LinearLayout>
+</FrameLayout>
