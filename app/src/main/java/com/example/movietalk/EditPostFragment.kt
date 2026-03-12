@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -13,19 +14,25 @@ import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.example.movietalk.databinding.FragmentEditPostBinding
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.util.UUID
 
 class EditPostFragment : Fragment() {
+
     private var _binding: FragmentEditPostBinding? = null
     private val binding get() = _binding!!
+
     private val args: EditPostFragmentArgs by navArgs()
     private val db by lazy { FirebaseFirestore.getInstance() }
+    private val storage by lazy { FirebaseStorage.getInstance() }
+
     private var selectedImageUri: Uri? = null
     private var currentImageUrl: String? = null
 
     private val pickImage =
-        registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.OpenDocument()) { uri ->
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             if (uri != null) {
                 val flags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
                 requireContext().contentResolver.takePersistableUriPermission(uri, flags)
@@ -36,7 +43,8 @@ class EditPostFragment : Fragment() {
         }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentEditPostBinding.inflate(inflater, container, false)
@@ -72,11 +80,13 @@ class EditPostFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val doc = db.collection("posts").document(postId).get().await()
+
                 if (!doc.exists()) {
                     Toast.makeText(requireContext(), "Post not found", Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
                     return@launch
                 }
+
                 binding.etEditTitle.setText(doc.getString("title") ?: "")
                 binding.etEditText.setText(doc.getString("text") ?: "")
                 binding.rbEditRating.rating = (doc.getDouble("rating") ?: 0.0).toFloat()
@@ -90,7 +100,8 @@ class EditPostFragment : Fragment() {
                 } else {
                     binding.imgPreview.visibility = View.GONE
                 }
-            } catch (e: Exception) {
+
+            } catch (_: Exception) {
                 Toast.makeText(requireContext(), "Failed to load post", Toast.LENGTH_SHORT).show()
                 findNavController().navigateUp()
             }
@@ -114,20 +125,51 @@ class EditPostFragment : Fragment() {
             "rating" to newRating
         )
 
-        selectedImageUri?.let { uri ->
-            updates["imageUrl"] = uri.toString()
+        setSaveLoading(true)
+
+        val imageUri = selectedImageUri
+
+        if (imageUri == null) {
+            db.collection("posts").document(postId).update(updates)
+                .addOnSuccessListener {
+                    setSaveLoading(false)
+                    Toast.makeText(requireContext(), "Post updated", Toast.LENGTH_SHORT).show()
+                    findNavController().navigateUp()
+                }
+                .addOnFailureListener {
+                    setSaveLoading(false)
+                    Toast.makeText(requireContext(), "Edit failed", Toast.LENGTH_SHORT).show()
+                }
+            return
         }
 
-        setSaveLoading(true)
-        db.collection("posts").document(postId).update(updates)
-            .addOnSuccessListener {
-                setSaveLoading(false)
-                Toast.makeText(requireContext(), "Post updated", Toast.LENGTH_SHORT).show()
-                findNavController().navigateUp()
+        val imageRef = storage.reference
+            .child("post_images/$postId/${UUID.randomUUID()}.jpg")
+
+        imageRef.putFile(imageUri)
+            .continueWithTask { task ->
+                if (!task.isSuccessful) {
+                    throw task.exception ?: Exception("Image upload failed")
+                }
+                imageRef.downloadUrl
+            }
+            .addOnSuccessListener { downloadUri ->
+                updates["imageUrl"] = downloadUri.toString()
+
+                db.collection("posts").document(postId).update(updates)
+                    .addOnSuccessListener {
+                        setSaveLoading(false)
+                        Toast.makeText(requireContext(), "Post updated", Toast.LENGTH_SHORT).show()
+                        findNavController().navigateUp()
+                    }
+                    .addOnFailureListener {
+                        setSaveLoading(false)
+                        Toast.makeText(requireContext(), "Edit failed", Toast.LENGTH_SHORT).show()
+                    }
             }
             .addOnFailureListener {
                 setSaveLoading(false)
-                Toast.makeText(requireContext(), "Edit failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Image upload failed", Toast.LENGTH_SHORT).show()
             }
     }
 
