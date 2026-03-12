@@ -15,8 +15,10 @@ import com.example.movietalk.data.local.AppDatabase
 import com.example.movietalk.data.repository.PostRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.tasks.await
 
 class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
     // OMDb API setup
@@ -30,10 +32,21 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
     }
 
     private val auth by lazy { FirebaseAuth.getInstance() }
+    private val storage by lazy { FirebaseStorage.getInstance() }
 
     private var selectedImageUri: Uri? = null
     private lateinit var repo: PostRepository
     private var fetchedMovieTitle: String? = null
+
+    private suspend fun uploadPostImageAndGetUrl(imageUri: Uri, uid: String, postId: String): String {
+        val imageRef = storage.reference
+            .child("post_images")
+            .child(uid)
+            .child("$postId-${System.currentTimeMillis()}.jpg")
+
+        imageRef.putFile(imageUri).await()
+        return imageRef.downloadUrl.await().toString()
+    }
 
     private val pickImage =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -173,6 +186,11 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                 try {
                     android.util.Log.d("UploadPost", "Starting post creation...")
 
+                    val uploadedImageUrl = selectedImageUri?.let { imageUri ->
+                        android.util.Log.d("UploadPost", "Uploading image to Firebase Storage...")
+                        uploadPostImageAndGetUrl(imageUri, uid, id)
+                    }.orEmpty()
+
                     val postObj = Post(
                         id = id,
                         title = title,
@@ -180,7 +198,7 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                         rating = rating,
                         userId = uid, // Ensure userId is set
                         userName = username,
-                        imageUrl = selectedImageUri?.toString() ?: "",
+                        imageUrl = uploadedImageUrl,
                         createdAt = System.currentTimeMillis(),
                     )
 
