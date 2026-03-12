@@ -137,6 +137,7 @@
                     style="?android:attr/progressBarStyleSmall"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
+                    android:indeterminateTint="@color/white"
                     android:layout_gravity="center"
                     android:visibility="gone" />
             </FrameLayout>
