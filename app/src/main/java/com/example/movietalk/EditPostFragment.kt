@@ -88,6 +88,12 @@ class EditPostFragment : Fragment() {
         }
     }
 
+    private fun setSaveLoading(isLoading: Boolean) {
+        binding.progressSave.visibility = if (isLoading) View.VISIBLE else View.GONE
+        binding.btnSaveEdit.isEnabled = !isLoading
+        binding.btnSaveEdit.text = if (isLoading) "" else "Save Changes"
+    }
+
     private fun saveEdit(postId: String) {
         val newTitle = binding.etEditTitle.text?.toString()?.trim().orEmpty()
         val newText = binding.etEditText.text?.toString()?.trim().orEmpty()
@@ -101,12 +107,15 @@ class EditPostFragment : Fragment() {
         selectedImageUri?.let { uri ->
             updates["imageUrl"] = uri.toString()
         }
+        setSaveLoading(true)
         db.collection("posts").document(postId).update(updates)
             .addOnSuccessListener {
+                setSaveLoading(false)
                 Toast.makeText(requireContext(), "Post updated", Toast.LENGTH_SHORT).show()
                 findNavController().navigateUp()
             }
             .addOnFailureListener {
+                setSaveLoading(false)
                 Toast.makeText(requireContext(), "Edit failed", Toast.LENGTH_SHORT).show()
             }
     }

@@ -44,6 +44,7 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
         viewModel.loading.observe(viewLifecycleOwner, Observer { loading ->
             binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
             binding.btnSaveProfile.isEnabled = !loading
+            binding.btnSaveProfile.text = if (loading) "" else "Save"
         })
 
         binding.btnPickImage.setOnClickListener {
@@ -57,6 +58,7 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
                 return@setOnClickListener
             }
             binding.progressBar.visibility = View.VISIBLE
+            binding.btnSaveProfile.text = ""
             if (selectedImageUri != null) {
                 viewModel.encodeImageToBase64(selectedImageUri!!) { base64 ->
                     viewModel.saveProfile(displayName, base64) { success ->
