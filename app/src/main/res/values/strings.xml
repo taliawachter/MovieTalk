@@ -52,4 +52,61 @@
     <string name="upload_failed">Upload failed: %1$s</string>
     <string name="unknown_error">Unknown error</string>
     <string name="firestore_timeout">Firestore write timeout - operation took too long</string>
+
+    <string name="edit_post">Edit Post</string>
+    <string name="title">Title</string>
+    <string name="post_text">Post text</string>
+    <string name="choose_image">Choose image</string>
+    <string name="image_preview">Image preview</string>
+    <string name="save_changes">Save Changes</string>
+
+    <string name="profile_picture">Profile picture</string>
+    <string name="change_photo">Change Photo</string>
+    <string name="username">Username</string>
+    <string name="save">Save</string>
+
+    <string name="movie_talk">MovieTalk</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="new_to_movietalk_signup">New to MovieTalk? Sign up now.</string>
+    <string name="app_logo">App logo</string>
+
+    <string name="post_details">Post Details</string>
+    <string name="post_image">Post image</string>
+    <string name="year_label">Year: </string>
+    <string name="genre_label">Genre: </string>
+    <string name="actors_label">Actors: </string>
+
+    <string name="avatar">Avatar</string>
+    <string name="placeholder_email">email@example.com</string>
+    <string name="edit_profile">Edit profile</string>
+    <string name="logout">Logout</string>
+    <string name="my_posts">My Posts</string>
+
+    <string name="sign_up">Sign Up</string>
+    <string name="select_profile_picture">Select Profile Picture</string>
+    <string name="already_have_account_login">Already have an account? Login</string>
+
+    <string name="search_movie_omdb">Search Movie (OMDb)</string>
+    <string name="type_movie_title">Type movie title...</string>
+
+    <string name="your_rating">Your Rating</string>
+    <string name="please_select_rating">Please select a rating</string>
+
+    <string name="movie_title_from_api">Movie title (from API)</string>
+
+    <string name="your_review">Your Review</string>
+    <string name="write_review_hint">Write your post / review...</string>
+
+    <string name="upload_image_optional">Upload Image (Optional)</string>
+    <string name="add_movie_image">Add a movie image</string>
+    <string name="choose_movie_image_description">Choose a poster, scene, or review image to make your post stand out</string>
+
+    <string name="no_image_selected_yet">No image selected yet</string>
+    <string name="preview_will_appear_here">Your preview will appear here</string>
+    <string name="preview">Preview</string>
+
+    <string name="home">Home</string>
+    <string name="upload">Upload</string>
+    <string name="profile">Profile</string>
 </resources>

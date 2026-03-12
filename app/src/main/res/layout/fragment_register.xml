@@ -11,6 +11,7 @@
         android:layout_height="0dp"
         android:scaleType="centerCrop"
         android:src="@drawable/backimg"
+        android:contentDescription="@null"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -31,6 +32,7 @@
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_marginTop="70dp"
+        android:contentDescription="@string/app_logo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -41,7 +43,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:text="Sing Up"
+        android:text="@string/sign_up"
         android:textColor="@android:color/white"
         android:textSize="34sp"
         android:textStyle="bold"
@@ -75,18 +77,18 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_marginBottom="16dp"
                 android:gravity="center_horizontal"
-                android:layout_marginBottom="16dp">
+                android:orientation="vertical">
 
                 <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/imgProfile"
                     android:layout_width="100dp"
                     android:layout_height="100dp"
-                    android:src="@drawable/ic_profile_placeholder"
-                    android:scaleType="centerCrop"
-                    android:contentDescription="Profile Picture"
                     android:layout_gravity="center_horizontal"
+                    android:contentDescription="@string/profile_picture"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_profile_placeholder"
                     app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MovieTalk.Circle"
                     app:strokeWidth="1dp" />
 
@@ -94,9 +96,9 @@
                     android:id="@+id/btnSelectProfilePic"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Select Profile Picture"
                     android:layout_marginTop="8dp"
-                    app:backgroundTint="@color/red"/>
+                    android:text="@string/select_profile_picture"
+                    app:backgroundTint="@color/red" />
             </LinearLayout>
 
             <EditText
@@ -104,8 +106,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@android:color/white"
-                android:hint="Email"
+                android:hint="@string/email"
                 android:inputType="textEmailAddress"
+                android:autofillHints="emailAddress"
                 android:textColor="@android:color/white"
                 android:textColorHint="#80FFFFFF" />
 
@@ -115,8 +118,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:backgroundTint="@android:color/white"
-                android:hint="Username"
+                android:hint="@string/username"
                 android:inputType="textPersonName"
+                android:autofillHints="username"
                 android:textColor="@android:color/white"
                 android:textColorHint="#80FFFFFF" />
 
@@ -126,8 +130,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:backgroundTint="@android:color/white"
-                android:hint="Password"
+                android:hint="@string/password"
                 android:inputType="textPassword"
+                android:autofillHints="password"
                 android:textColor="@android:color/white"
                 android:textColorHint="#80FFFFFF" />
 
@@ -140,7 +145,7 @@
                     android:id="@+id/btnRegister"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Create Account"
+                    android:text="@string/create_account"
                     android:textColor="@color/white"
                     app:backgroundTint="@color/red" />
 
@@ -149,8 +154,8 @@
                     style="?android:attr/progressBarStyleSmall"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:indeterminateTint="@color/white"
                     android:layout_gravity="center"
+                    android:indeterminateTint="@color/white"
                     android:visibility="gone" />
             </FrameLayout>
 
@@ -160,7 +165,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
-                android:text="Already have an account? Login"
+                android:text="@string/already_have_account_login"
                 android:textColor="@android:color/holo_red_light"
                 android:textSize="14sp" />
 
