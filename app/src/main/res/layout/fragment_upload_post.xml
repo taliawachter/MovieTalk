@@ -212,37 +212,116 @@
             android:layout_marginTop="14dp"
             android:layout_marginBottom="8dp" />
 
-
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="118dp"
-            android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@color/black"
-            app:cardCornerRadius="12dp"
-            app:strokeColor="@color/gray"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:cardBackgroundColor="#14000000"
+            app:cardCornerRadius="18dp"
+            app:strokeColor="#55FFFFFF"
             app:strokeWidth="1dp">
 
-            <ImageView
-                android:id="@+id/ivPreview"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:contentDescription="Preview"
-                android:scaleType="centerCrop"
-                android:visibility="gone" />
-        </com.google.android.material.card.MaterialCardView>
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <Button
-            android:id="@+id/btnPickImage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/gray"
-            android:text="Upload Image"
-            android:textColor="@color/white" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:alpha="0.9"
+                        android:contentDescription="@null"
+                        android:src="@android:drawable/ic_menu_gallery"
+                        android:tint="@color/white" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Add a movie image"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center"
+                        android:text="Choose a poster, scene, or review image to make your post stand out"
+                        android:textColor="@color/gray"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="170dp"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="#12000000"
+                    app:cardCornerRadius="14dp"
+                    app:strokeColor="#66FFFFFF"
+                    app:strokeWidth="1dp">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="20dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="No image selected yet"
+                                android:textColor="@color/white"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="Your preview will appear here"
+                                android:textColor="@color/gray"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/ivPreview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="Preview"
+                            android:scaleType="centerCrop"
+                            android:visibility="gone" />
+                    </FrameLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPickImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Choose Image"
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/gray"
+                    app:cornerRadius="14dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp">
+            android:layout_height="wrap_content" >
 
             <Button
                 android:id="@+id/btnPost"
@@ -265,7 +344,7 @@
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="32dp" />
+            android:layout_height="50dp" />
 
     </LinearLayout>
     </ScrollView>
