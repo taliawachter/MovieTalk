@@ -57,6 +57,13 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
         val tvOmdbGenre = view.findViewById<TextView>(R.id.tvOmdbGenre)
         val tvOmdbActors = view.findViewById<TextView>(R.id.tvOmdbActors)
         val etTitle = view.findViewById<EditText>(R.id.etTitle)
+        val progressFetchOmdb = view.findViewById<ProgressBar>(R.id.progressFetchOmdb)
+
+        fun setFetchLoading(isLoading: Boolean) {
+            progressFetchOmdb.visibility = if (isLoading) View.VISIBLE else View.GONE
+            btnFetchOmdb.isEnabled = !isLoading
+            btnFetchOmdb.text = if (isLoading) "" else "Fetch Movie Info"
+        }
 
         etTitle.setOnClickListener {
             val title = fetchedMovieTitle?.trim().orEmpty()
@@ -78,6 +85,7 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
             tvOmdbActors.text = "Actors: ..."
             // Fetch from OMDb
             lifecycleScope.launch {
+                setFetchLoading(true)
                 try {
                     val response = withContext(kotlinx.coroutines.Dispatchers.IO) {
                         omdbApiService.getMovieByTitle(omdbTitle, omdbApiKey).execute()
@@ -94,6 +102,8 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                     tvOmdbYear.text = "Year: Error"
                     tvOmdbGenre.text = "Genre: Error"
                     tvOmdbActors.text = "Actors: Error"
+                } finally {
+                    setFetchLoading(false)
                 }
             }
         }
@@ -104,11 +114,20 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
 
         val ivPreview = view.findViewById<ImageView>(R.id.ivPreview)
         val btnPickImage = view.findViewById<Button>(R.id.btnPickImage)
+        val progressUpload = view.findViewById<ProgressBar>(R.id.progressUpload)
 
         val ratingBar = view.findViewById<RatingBar>(R.id.ratingBar)
         val etText = view.findViewById<EditText>(R.id.etText)
 
         val btnPost = view.findViewById<Button>(R.id.btnPost)
+
+        fun setUploadLoading(isLoading: Boolean) {
+            progressUpload.visibility = if (isLoading) View.VISIBLE else View.GONE
+            btnPost.isEnabled = !isLoading
+            btnPickImage.isEnabled = !isLoading
+            btnFetchOmdb.isEnabled = !isLoading
+            btnPost.text = if (isLoading) "" else "Create Post"
+        }
 
         // Reset form fields and preview when fragment is viewed
         fetchedMovieTitle = null
@@ -147,7 +166,7 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
             val rating = ratingBar.rating
             val id = FirebaseFirestore.getInstance().collection("posts").document().id
 
-            btnPost.isEnabled = false
+            setUploadLoading(true)
 
             // Use activity's lifecycle scope instead of fragment's for more stability
             requireActivity().lifecycleScope.launch {
@@ -237,7 +256,6 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                     }
 
                 } catch (e: Exception) {
-                    btnPost.isEnabled = true
                     android.util.Log.e("UploadPost", "Upload failed", e)
                     if (isAdded) {
                         Toast.makeText(
@@ -245,6 +263,10 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                             "Upload failed: ${e.message}",
                             Toast.LENGTH_LONG
                         ).show()
+                    }
+                } finally {
+                    if (isAdded) {
+                        setUploadLoading(false)
                     }
                 }
             }
