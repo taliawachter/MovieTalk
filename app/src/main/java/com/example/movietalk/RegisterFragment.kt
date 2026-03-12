@@ -101,7 +101,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
 
                     if (user == null) {
                         pbRegisterSmall.visibility = View.GONE
-                        btnRegister.text = "Create Account"
+                        btnRegister.text = getString(R.string.create_account)
                         btnRegister.isEnabled = true
                         btnSelectProfilePic.isEnabled = true
 
@@ -137,7 +137,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                             firestore.collection("users").document(user.uid).set(userData).await()
 
                             pbRegisterSmall.visibility = View.GONE
-                            btnRegister.text = "Create Account"
+                            btnRegister.text = getString(R.string.create_account)
                             btnRegister.isEnabled = true
                             btnSelectProfilePic.isEnabled = true
 
@@ -151,7 +151,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                             )
                         } catch (e: Exception) {
                             pbRegisterSmall.visibility = View.GONE
-                            btnRegister.text = "Create Account"
+                            btnRegister.text = getString(R.string.create_account)
                             btnRegister.isEnabled = true
                             btnSelectProfilePic.isEnabled = true
 
@@ -165,7 +165,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                 }
                 .addOnFailureListener { e ->
                     pbRegisterSmall.visibility = View.GONE
-                    btnRegister.text = "Create Account"
+                    btnRegister.text = getString(R.string.create_account)
                     btnRegister.isEnabled = true
                     btnSelectProfilePic.isEnabled = true
 

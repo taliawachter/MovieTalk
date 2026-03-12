@@ -26,7 +26,6 @@ class PostDetailsFragment : Fragment() {
     private val args: PostDetailsFragmentArgs by navArgs()
     private val db by lazy { FirebaseFirestore.getInstance() }
 
-    // OMDb API
     private val omdbApiService by lazy {
         retrofit2.Retrofit.Builder()
             .baseUrl("https://www.omdbapi.com")
@@ -73,7 +72,6 @@ class PostDetailsFragment : Fragment() {
                 currentRating = (doc.getDouble("rating") ?: 0.0).toFloat()
                 val userName = doc.getString("userName") ?: getString(R.string.user)
 
-                // Image
                 if (!currentImageUrl.isNullOrBlank()) {
                     binding.ivPostImage.visibility = View.VISIBLE
                     Glide.with(this).load(currentImageUrl).into(binding.ivPostImage)
@@ -84,11 +82,7 @@ class PostDetailsFragment : Fragment() {
                 binding.tvPostTitle.text = currentTitle
                 binding.ratingBar.rating = currentRating
                 binding.tvPostText.text = currentText
-
-                // Author
                 binding.tvPostAuthor.text = getString(R.string.posted_by, userName)
-
-                // Owner actions
 
                 val currentUserUid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
                 val isOwner = currentOwnerId != null && currentUserUid == currentOwnerId
@@ -104,20 +98,19 @@ class PostDetailsFragment : Fragment() {
                     confirmDelete(postId)
                 }
 
-                // Fetch OMDb info
                 viewLifecycleOwner.lifecycleScope.launch {
                     try {
                         val response = withContext(kotlinx.coroutines.Dispatchers.IO) {
                             omdbApiService.getMovieByTitle(currentTitle, omdbApiKey).execute()
                         }
                         val movie = response.body()
-                        binding.tvOmdbYear.text = getString(R.string.year_colon, movie?.Year ?: "-")
-                        binding.tvOmdbGenre.text = getString(R.string.genre_colon, movie?.Genre ?: "-")
-                        binding.tvOmdbActors.text = getString(R.string.actors_colon, movie?.Actors ?: "-")
-                    } catch (e: Exception) {
-                        binding.tvOmdbYear.text = getString(R.string.year_colon, "-")
-                        binding.tvOmdbGenre.text = getString(R.string.genre_colon, "-")
-                        binding.tvOmdbActors.text = getString(R.string.actors_colon, "-")
+                        binding.tvOmdbYear.text = getString(R.string.year_value, movie?.Year ?: "-")
+                        binding.tvOmdbGenre.text = getString(R.string.genre_value, movie?.Genre ?: "-")
+                        binding.tvOmdbActors.text = getString(R.string.actors_value, movie?.Actors ?: "-")
+                    } catch (_: Exception) {
+                        binding.tvOmdbYear.text = getString(R.string.year_value, "-")
+                        binding.tvOmdbGenre.text = getString(R.string.genre_value, "-")
+                        binding.tvOmdbActors.text = getString(R.string.actors_value, "-")
                     }
                 }
             }
@@ -135,10 +128,8 @@ class PostDetailsFragment : Fragment() {
     }
 
     private fun deletePost(postId: String) {
-        // Delete from Firebase
         db.collection("posts").document(postId).delete()
             .addOnSuccessListener {
-                // Delete from local database and refresh
                 viewLifecycleOwner.lifecycleScope.launch {
                     try {
                         val localDb = com.example.movietalk.data.local.AppDatabase.getInstance(requireContext())

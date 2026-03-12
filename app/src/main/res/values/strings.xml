@@ -1,19 +1,55 @@
 <resources>
-        <string name="posted_by">Posted by %1$s</string>
-        <string name="edit">Edit</string>
-        <string name="delete">Delete</string>
-        <string name="delete_post_title">Delete post?</string>
-        <string name="delete_post_message">This cannot be undone.</string>
-        <string name="delete_failed">Delete failed</string>
-        <string name="deleted">Deleted</string>
-        <string name="cancel">Cancel</string>
-        <string name="post_not_found">Post not found</string>
-        <string name="failed_to_load_post">Failed to load post</string>
-        <string name="user">User</string>
-        <string name="year_colon">Year: %1$s</string>
-        <string name="genre_colon">Genre: %1$s</string>
-        <string name="actors_colon">Actors: %1$s</string>
     <string name="app_name">MovieTalk</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="sign_in">Sign In</string>
+    <string name="create_account">Create Account</string>
+    <string name="login_success">Login successful</string>
+
+    <string name="movietalk_user">MovieTalk user</string>
+    <string name="user">User</string>
+    <string name="default_user">default user</string>
+
+    <string name="posted_by">Posted by %1$s</string>
+
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="delete_post_title">Delete post?</string>
+    <string name="delete_post_message">This cannot be undone.</string>
+    <string name="delete_failed">Delete failed</string>
+    <string name="deleted">Deleted</string>
+
+    <string name="post_not_found">Post not found</string>
+    <string name="failed_to_load_post">Failed to load post</string>
+
+    <string name="fetch_movie_info">Fetch Movie Info</string>
+    <string name="movie_title_dialog_title">Movie title</string>
+    <string name="no_movie_selected">No movie selected</string>
+    <string name="ok">OK</string>
+    <string name="enter_movie_title">Enter a movie title</string>
+
+    <string name="year_loading">Year: ...</string>
+    <string name="genre_loading">Genre: ...</string>
+    <string name="actors_loading">Actors: ...</string>
+
+    <string name="not_found">Not found</string>
+    <string name="year_value">Year: %1$s</string>
+    <string name="genre_value">Genre: %1$s</string>
+    <string name="actors_value">Actors: %1$s</string>
+
+    <string name="year_error">Year: Error</string>
+    <string name="genre_error">Genre: Error</string>
+    <string name="actors_error">Actors: Error</string>
+
+    <string name="create_post">Create Post</string>
+    <string name="fetch_movie_first">Fetch a movie first</string>
+    <string name="write_something">Write something</string>
+    <string name="not_logged_in">Not logged in</string>
+    <string name="post_uploaded">Post uploaded!</string>
+
+    <string name="navigation_error">Navigation error: %1$s</string>
+    <string name="upload_failed">Upload failed: %1$s</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="firestore_timeout">Firestore write timeout - operation took too long</string>
 </resources>

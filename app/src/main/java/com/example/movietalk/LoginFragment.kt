@@ -21,10 +21,10 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         val etEmail = view.findViewById<EditText>(R.id.etLoginEmail)
         val etPassword = view.findViewById<EditText>(R.id.etLoginPassword)
         val btnLogin = view.findViewById<Button>(R.id.btnLogin)
-        val logintosingup = view.findViewById<TextView>(R.id.logintosingup)
+        val loginToSingUp = view.findViewById<TextView>(R.id.logintosingup)
         val pbLoginSmall = view.findViewById<android.widget.ProgressBar>(R.id.pbLoginSmall)
 
-        logintosingup.setOnClickListener {
+        loginToSingUp.setOnClickListener {
             findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
         }
 
@@ -44,7 +44,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener {
                     pbLoginSmall.visibility = View.GONE
-                    btnLogin.text = "Sign In"
+                    btnLogin.text = getString(R.string.sign_in)
                     btnLogin.isEnabled = true
 
                     val options = navOptions {
@@ -54,7 +54,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 }
                 .addOnFailureListener { e ->
                     pbLoginSmall.visibility = View.GONE
-                    btnLogin.text = "Sign In"
+                    btnLogin.text = getString(R.string.sign_in)
                     btnLogin.isEnabled = true
 
                     Toast.makeText(requireContext(), e.message ?: "Login failed", Toast.LENGTH_SHORT).show()

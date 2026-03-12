@@ -1,6 +1,6 @@
 package com.example.movietalk
 
-import android.net.Uri
+import androidx.core.net.toUri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -45,10 +45,10 @@ class PostsAdapter(
         private val tvUsername: TextView = itemView.findViewById(R.id.tvUsername)
         private val imgPost: ImageView = itemView.findViewById(R.id.imgPost)
         fun bind(post: Post) {
-            tvTitle.text = if (post.title.isNotBlank()) post.title else "Untitled"
+            tvTitle.text = post.title.ifBlank { "Untitled" }
             tvDesc.text = post.text
-            tvUsername.text = if (post.userName.isNotBlank()) post.userName else "User"
-            ratingBar.rating = post.rating.toFloat()
+            tvUsername.text = post.userName.ifBlank { "User" }
+            ratingBar.rating = post.rating
 
             val value = post.imageUrl.trim()
             if (value.isBlank()) {
@@ -57,7 +57,7 @@ class PostsAdapter(
                 imgPost.visibility = View.VISIBLE
 
                 val request = if (value.startsWith("content://") || value.startsWith("file://")) {
-                    Picasso.get().load(Uri.parse(value))
+                    Picasso.get().load(value.toUri())
                 } else {
                     Picasso.get().load(value)
                 }

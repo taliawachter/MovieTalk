@@ -90,7 +90,7 @@ class EditPostFragment : Fragment() {
                 } else {
                     binding.imgPreview.visibility = View.GONE
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 Toast.makeText(requireContext(), "Failed to load post", Toast.LENGTH_SHORT).show()
                 findNavController().navigateUp()
             }

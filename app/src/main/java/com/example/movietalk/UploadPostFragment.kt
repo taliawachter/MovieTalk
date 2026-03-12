@@ -1,13 +1,12 @@
 package com.example.movietalk
 
-import kotlinx.coroutines.withContext
-
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -16,16 +15,20 @@ import com.example.movietalk.data.repository.PostRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
-    // OMDb API setup
+
     private val omdbApiKey = "a64aa4bd"
+
     private val omdbApiService by lazy {
         retrofit2.Retrofit.Builder()
-            .baseUrl("https://www.omdbapi.com")
+            .baseUrl("https://www.omdbapi.com/")
             .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
             .build()
             .create(com.example.movietalk.data.api.OmdbApiService::class.java)
@@ -38,7 +41,11 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
     private lateinit var repo: PostRepository
     private var fetchedMovieTitle: String? = null
 
-    private suspend fun uploadPostImageAndGetUrl(imageUri: Uri, uid: String, postId: String): String {
+    private suspend fun uploadPostImageAndGetUrl(
+        imageUri: Uri,
+        uid: String,
+        postId: String
+    ): String {
         val imageRef = storage.reference
             .child("post_images")
             .child(uid)
@@ -63,7 +70,8 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
         }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        // OMDb UI elements
+        super.onViewCreated(view, savedInstanceState)
+
         val etOmdbTitle = view.findViewById<EditText>(R.id.etOmdbTitle)
         val btnFetchOmdb = view.findViewById<Button>(R.id.btnFetchOmdb)
         val tvOmdbYear = view.findViewById<TextView>(R.id.tvOmdbYear)
@@ -72,77 +80,30 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
         val etTitle = view.findViewById<EditText>(R.id.etTitle)
         val progressFetchOmdb = view.findViewById<ProgressBar>(R.id.progressFetchOmdb)
 
-        fun setFetchLoading(isLoading: Boolean) {
-            progressFetchOmdb.visibility = if (isLoading) View.VISIBLE else View.GONE
-            btnFetchOmdb.isEnabled = !isLoading
-            btnFetchOmdb.text = if (isLoading) "" else "Fetch Movie Info"
-        }
-
-        etTitle.setOnClickListener {
-            val title = fetchedMovieTitle?.trim().orEmpty()
-            androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle("Movie title")
-                .setMessage(if (title.isNotEmpty()) title else "No movie selected")
-                .setPositiveButton("OK", null)
-                .show()
-        }
-
-        btnFetchOmdb.setOnClickListener {
-            val omdbTitle = etOmdbTitle.text?.toString()?.trim().orEmpty()
-            if (omdbTitle.isEmpty()) {
-                etOmdbTitle.error = "Enter a movie title"
-                return@setOnClickListener
-            }
-            tvOmdbYear.text = "Year: ..."
-            tvOmdbGenre.text = "Genre: ..."
-            tvOmdbActors.text = "Actors: ..."
-            // Fetch from OMDb
-            lifecycleScope.launch {
-                setFetchLoading(true)
-                try {
-                    val response = withContext(kotlinx.coroutines.Dispatchers.IO) {
-                        omdbApiService.getMovieByTitle(omdbTitle, omdbApiKey).execute()
-                    }
-                    val movie = response.body()
-                    fetchedMovieTitle = movie?.Title?.trim().orEmpty().ifBlank { null }
-                    etTitle.setText(fetchedMovieTitle.orEmpty())
-                    etTitle.setSelection(etTitle.text?.length ?: 0)
-                    tvOmdbYear.text = "Year: ${movie?.Year ?: "Not found"}"
-                    tvOmdbGenre.text = "Genre: ${movie?.Genre ?: "Not found"}"
-                    tvOmdbActors.text = "Actors: ${movie?.Actors ?: "Not found"}"
-                } catch (e: Exception) {
-                    fetchedMovieTitle = null
-                    tvOmdbYear.text = "Year: Error"
-                    tvOmdbGenre.text = "Genre: Error"
-                    tvOmdbActors.text = "Actors: Error"
-                } finally {
-                    setFetchLoading(false)
-                }
-            }
-        }
-        super.onViewCreated(view, savedInstanceState)
-
         val localDb = AppDatabase.getInstance(requireContext())
         repo = PostRepository(FirebaseFirestore.getInstance(), localDb.postDao())
 
         val ivPreview = view.findViewById<ImageView>(R.id.ivPreview)
         val btnPickImage = view.findViewById<Button>(R.id.btnPickImage)
         val progressUpload = view.findViewById<ProgressBar>(R.id.progressUpload)
-
         val ratingBar = view.findViewById<RatingBar>(R.id.ratingBar)
         val etText = view.findViewById<EditText>(R.id.etText)
-
         val btnPost = view.findViewById<Button>(R.id.btnPost)
+
+        fun setFetchLoading(isLoading: Boolean) {
+            progressFetchOmdb.visibility = if (isLoading) View.VISIBLE else View.GONE
+            btnFetchOmdb.isEnabled = !isLoading
+            btnFetchOmdb.text = if (isLoading) "" else getString(R.string.fetch_movie_info)
+        }
 
         fun setUploadLoading(isLoading: Boolean) {
             progressUpload.visibility = if (isLoading) View.VISIBLE else View.GONE
             btnPost.isEnabled = !isLoading
             btnPickImage.isEnabled = !isLoading
             btnFetchOmdb.isEnabled = !isLoading
-            btnPost.text = if (isLoading) "" else "Create Post"
+            btnPost.text = if (isLoading) "" else getString(R.string.create_post)
         }
 
-        // Reset form fields and preview when fragment is viewed
         fetchedMovieTitle = null
         etTitle.setText("")
         ratingBar.rating = 0f
@@ -152,6 +113,66 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
             visibility = View.GONE
         }
 
+        etTitle.setOnClickListener {
+            val title = fetchedMovieTitle?.trim().orEmpty()
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.movie_title_dialog_title)
+                .setMessage(
+                    if (title.isNotEmpty()) title else getString(R.string.no_movie_selected)
+                )
+                .setPositiveButton(R.string.ok, null)
+                .show()
+        }
+
+        btnFetchOmdb.setOnClickListener {
+            val omdbTitle = etOmdbTitle.text?.toString()?.trim().orEmpty()
+
+            if (omdbTitle.isEmpty()) {
+                etOmdbTitle.error = getString(R.string.enter_movie_title)
+                return@setOnClickListener
+            }
+
+            tvOmdbYear.text = getString(R.string.year_loading)
+            tvOmdbGenre.text = getString(R.string.genre_loading)
+            tvOmdbActors.text = getString(R.string.actors_loading)
+
+            lifecycleScope.launch {
+                setFetchLoading(true)
+                try {
+                    val response = withContext(Dispatchers.IO) {
+                        omdbApiService.getMovieByTitle(omdbTitle, omdbApiKey).execute()
+                    }
+
+                    val movie = response.body()
+                    fetchedMovieTitle = movie?.Title?.trim().orEmpty().ifBlank { null }
+
+                    etTitle.setText(fetchedMovieTitle.orEmpty())
+                    etTitle.setSelection(etTitle.text?.length ?: 0)
+
+                    tvOmdbYear.text = getString(
+                        R.string.year_value,
+                        movie?.Year ?: getString(R.string.not_found)
+                    )
+                    tvOmdbGenre.text = getString(
+                        R.string.genre_value,
+                        movie?.Genre ?: getString(R.string.not_found)
+                    )
+                    tvOmdbActors.text = getString(
+                        R.string.actors_value,
+                        movie?.Actors ?: getString(R.string.not_found)
+                    )
+
+                } catch (_: Exception) {
+                    fetchedMovieTitle = null
+                    tvOmdbYear.text = getString(R.string.year_error)
+                    tvOmdbGenre.text = getString(R.string.genre_error)
+                    tvOmdbActors.text = getString(R.string.actors_error)
+                } finally {
+                    setFetchLoading(false)
+                }
+            }
+        }
+
         btnPickImage.setOnClickListener {
             pickImage.launch(arrayOf("image/*"))
         }
@@ -159,19 +180,27 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
         btnPost.setOnClickListener {
             val title = fetchedMovieTitle?.trim().orEmpty()
             if (title.isEmpty()) {
-                Toast.makeText(requireContext(), "Fetch a movie first", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.fetch_movie_first),
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
             val text = etText.text?.toString()?.trim().orEmpty()
             if (text.isEmpty()) {
-                etText.error = "Write something"
+                etText.error = getString(R.string.write_something)
                 return@setOnClickListener
             }
 
             val user = auth.currentUser
             val uid = user?.uid ?: run {
-                Toast.makeText(requireContext(), "Not logged in", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.not_logged_in),
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
@@ -180,7 +209,6 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
 
             setUploadLoading(true)
 
-            // Use activity's lifecycle scope instead of fragment's for more stability
             requireActivity().lifecycleScope.launch {
                 try {
                     android.util.Log.d("UploadPost", "Starting post creation...")
@@ -194,15 +222,15 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
 
                         userDoc.getString("username")
                             ?.takeIf { it.isNotBlank() }
-                            ?: withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            ?: withContext(Dispatchers.IO) {
                                 localDb.userDao().getUser(uid)?.username
                             }
                             ?: user.email?.substringBefore("@")
-                            ?: "User"
+                            ?: getString(R.string.default_user)
                     } catch (_: Exception) {
-                        withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        withContext(Dispatchers.IO) {
                             localDb.userDao().getUser(uid)?.username
-                        } ?: user.email?.substringBefore("@") ?: "User"
+                        } ?: user.email?.substringBefore("@") ?: getString(R.string.default_user)
                     }
 
                     val uploadedImageUrl = selectedImageUri?.let { imageUri ->
@@ -215,80 +243,60 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                         title = title,
                         text = text,
                         rating = rating,
-                        userId = uid, // Ensure userId is set
+                        userId = uid,
                         userName = username,
                         imageUrl = uploadedImageUrl,
                         createdAt = System.currentTimeMillis(),
                     )
 
                     android.util.Log.d("UploadPost", "Adding post...")
-                    try {
-                        val result = withTimeoutOrNull(15000) { // 15 second timeout
-                            repo.addPost(postObj)
-                        }
-                        if (result == null) {
-                            throw Exception("Firestore write timeout - operation took too long")
-                        }
-                    } catch (addException: Exception) {
-                        android.util.Log.e("UploadPost", "addPost failed", addException)
-                        throw addException
+                    val result = withTimeoutOrNull(15000) {
+                        repo.addPost(postObj)
+                    }
+
+                    if (result == null) {
+                        throw Exception(getString(R.string.firestore_timeout))
                     }
 
                     android.util.Log.d("UploadPost", "Refreshing posts...")
-                    try {
-                        repo.refreshPosts()
-                        android.util.Log.d("UploadPost", "refreshPosts completed")
-                    } catch (refreshException: Exception) {
-                        android.util.Log.e("UploadPost", "refreshPosts failed", refreshException)
-                        throw refreshException
-                    }
+                    repo.refreshPosts()
+                    android.util.Log.d("UploadPost", "refreshPosts completed")
 
                     android.util.Log.d("UploadPost", "Post uploaded successfully!")
                     if (isAdded) {
-                        Toast.makeText(requireContext(), "Post uploaded!", Toast.LENGTH_SHORT)
-                            .show()
+                        Toast.makeText(
+                            requireContext(),
+                            getString(R.string.post_uploaded),
+                            Toast.LENGTH_SHORT
+                        ).show()
 
                         fetchedMovieTitle = null
                         etTitle.setText("")
                         etText.setText("")
                         ratingBar.rating = 0f
-                        android.util.Log.d("UploadPost", "addPost completed")
-                        // Always refresh posts after upload to ensure local list is up to date
-                        android.util.Log.d("UploadPost", "Refreshing posts...")
-                        try {
-                            repo.refreshPosts()
-                            android.util.Log.d("UploadPost", "refreshPosts completed")
-                        } catch (refreshException: Exception) {
-                            android.util.Log.e(
-                                "UploadPost",
-                                "refreshPosts failed",
-                                refreshException
-                            )
-                        }
+                        selectedImageUri = null
+
                         ivPreview.apply {
                             setImageDrawable(null)
                             visibility = View.GONE
                         }
 
-                        android.util.Log.d("UploadPost", "Waiting before navigation...")
-                        kotlinx.coroutines.delay(1000)
+                        delay(1000)
 
-                        android.util.Log.d("UploadPost", "isAdded=$isAdded, view=$view")
-                        if (isAdded && view != null) {
+                        if (isAdded) {
                             try {
-                                android.util.Log.d("UploadPost", "Navigating to home...")
                                 findNavController().navigate(R.id.action_uploadPostFragment_to_homeFragment)
-                                android.util.Log.d("UploadPost", "Navigation successful!")
                             } catch (navException: Exception) {
                                 android.util.Log.e("UploadPost", "Navigation failed", navException)
                                 Toast.makeText(
                                     requireContext(),
-                                    "Navigation error: ${navException.message}",
+                                    getString(
+                                        R.string.navigation_error,
+                                        navException.message ?: getString(R.string.unknown_error)
+                                    ),
                                     Toast.LENGTH_LONG
                                 ).show()
                             }
-                        } else {
-                            android.util.Log.e("UploadPost", "Cannot navigate: isAdded=$isAdded")
                         }
                     }
 
@@ -297,7 +305,10 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                     if (isAdded) {
                         Toast.makeText(
                             requireContext(),
-                            "Upload failed: ${e.message}",
+                            getString(
+                                R.string.upload_failed,
+                                e.message ?: getString(R.string.unknown_error)
+                            ),
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -308,12 +319,12 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                 }
             }
         }
-            // Scroll to bottom to reveal hidden button after layout is drawn
-            view.post {
-                val scrollView = view.parent as? ScrollView
-                scrollView?.post {
-                    scrollView.fullScroll(View.FOCUS_DOWN)
-                }
+
+        view.post {
+            val scrollView = view.parent as? ScrollView
+            scrollView?.post {
+                scrollView.fullScroll(View.FOCUS_DOWN)
             }
+        }
     }
 }

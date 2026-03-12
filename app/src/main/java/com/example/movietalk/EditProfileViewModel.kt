@@ -24,13 +24,13 @@ class EditProfileViewModel(app: Application) : AndroidViewModel(app) {
     private val auth = FirebaseAuth.getInstance()
     private val appDb = AppDatabase.getInstance(app.applicationContext)
 
-    private val _loading = MutableLiveData<Boolean>(false)
+    private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
     private val _profileImageUrl = MutableLiveData<String?>(null)
     val profileImageUrl: LiveData<String?> = _profileImageUrl
 
-    private val _displayName = MutableLiveData<String>("")
+    private val _displayName = MutableLiveData("")
     val displayName: LiveData<String> = _displayName
 
     fun loadProfile() {
@@ -64,7 +64,7 @@ class EditProfileViewModel(app: Application) : AndroidViewModel(app) {
             val byteArray = outputStream.toByteArray()
             val base64String = Base64.encodeToString(byteArray, Base64.DEFAULT)
             onResult(base64String)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             onResult(null)
         }
     }
