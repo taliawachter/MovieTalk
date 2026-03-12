@@ -66,7 +66,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                         val imageBytes = android.util.Base64.decode(photoBase64, android.util.Base64.DEFAULT)
                         val bitmap = android.graphics.BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
                         ivAvatar.setImageBitmap(bitmap)
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         ivAvatar.setImageResource(R.drawable.ic_profile)
                     }
                 } else {

@@ -110,7 +110,7 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                     tvOmdbYear.text = "Year: ${movie?.Year ?: "Not found"}"
                     tvOmdbGenre.text = "Genre: ${movie?.Genre ?: "Not found"}"
                     tvOmdbActors.text = "Actors: ${movie?.Actors ?: "Not found"}"
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     fetchedMovieTitle = null
                     tvOmdbYear.text = "Year: Error"
                     tvOmdbGenre.text = "Genre: Error"

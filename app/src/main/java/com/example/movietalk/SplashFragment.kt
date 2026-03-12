@@ -35,14 +35,11 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
         try {
             val nav = findNavController()
             if (user != null) {
-                // connected -> Home
                 nav.navigate(R.id.action_splashFragment_to_homeFragment)
             } else {
-                // not connected -> Login (או Register)
                 nav.navigate(R.id.action_splashFragment_to_loginFragment)
             }
-        } catch (e: Exception) {
-            // fallback: ignore navigation failure to avoid app crash
+        } catch (_: Exception) {
         }
     }
 

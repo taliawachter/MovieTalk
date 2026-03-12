@@ -64,7 +64,7 @@ class EditProfileViewModel(app: Application) : AndroidViewModel(app) {
             val byteArray = outputStream.toByteArray()
             val base64String = Base64.encodeToString(byteArray, Base64.DEFAULT)
             onResult(base64String)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             onResult(null)
         }
     }

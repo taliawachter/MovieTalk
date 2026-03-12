@@ -114,7 +114,7 @@ class PostDetailsFragment : Fragment() {
                         binding.tvOmdbYear.text = getString(R.string.year_colon, movie?.Year ?: "-")
                         binding.tvOmdbGenre.text = getString(R.string.genre_colon, movie?.Genre ?: "-")
                         binding.tvOmdbActors.text = getString(R.string.actors_colon, movie?.Actors ?: "-")
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         binding.tvOmdbYear.text = getString(R.string.year_colon, "-")
                         binding.tvOmdbGenre.text = getString(R.string.genre_colon, "-")
                         binding.tvOmdbActors.text = getString(R.string.actors_colon, "-")
