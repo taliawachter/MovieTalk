@@ -15,6 +15,9 @@ interface PostDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(posts: List<PostEntity>)
 
+    @Query("UPDATE posts SET userName = :username WHERE userId = :userId")
+    suspend fun updateUserNameForUser(userId: String, username: String)
+
     @Query("DELETE FROM posts")
     suspend fun clearAll()
 

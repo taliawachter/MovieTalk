@@ -59,7 +59,10 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         // Load displayName and photoUrl from Firestore
         if (uid != null) {
             firestore.collection("users").document(uid).get().addOnSuccessListener { doc ->
-                val displayName = doc.getString("displayName") ?: email?.substringBefore("@") ?: "MovieTalk user"
+                val displayName = doc.getString("username")
+                    ?: doc.getString("displayName")
+                    ?: email?.substringBefore("@")
+                    ?: "MovieTalk user"
                 val photoBase64 = doc.getString("photo")
                 tvName.text = displayName
                 if (!photoBase64.isNullOrBlank()) {

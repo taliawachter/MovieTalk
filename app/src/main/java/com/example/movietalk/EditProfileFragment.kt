@@ -2,8 +2,10 @@ package com.example.movietalk
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.util.Base64
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -29,6 +31,29 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
             }
         }
 
+    private fun renderProfileImage(value: String?) {
+        if (value.isNullOrBlank()) {
+            binding.ivEditAvatar.setImageResource(R.drawable.ic_profile)
+            return
+        }
+
+        try {
+            val imageBytes = Base64.decode(value, Base64.DEFAULT)
+            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            if (bitmap != null) {
+                binding.ivEditAvatar.setImageBitmap(bitmap)
+                return
+            }
+        } catch (_: Exception) {
+        }
+
+        com.squareup.picasso.Picasso.get()
+            .load(value)
+            .placeholder(R.drawable.ic_profile)
+            .error(R.drawable.ic_profile)
+            .into(binding.ivEditAvatar)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentEditProfileBinding.bind(view)
         viewModel.loadProfile()
@@ -37,9 +62,7 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
             binding.etDisplayName.setText(it)
         })
         viewModel.profileImageUrl.observe(viewLifecycleOwner, Observer { url ->
-            if (!url.isNullOrBlank()) {
-                com.squareup.picasso.Picasso.get().load(url).into(binding.ivEditAvatar)
-            }
+            renderProfileImage(url)
         })
         viewModel.loading.observe(viewLifecycleOwner, Observer { loading ->
             binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
@@ -54,7 +77,7 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
         binding.btnSaveProfile.setOnClickListener {
             val displayName = binding.etDisplayName.text?.toString()?.trim().orEmpty()
             if (displayName.isBlank()) {
-                binding.etDisplayName.error = "Display name required"
+                binding.etDisplayName.error = "Username required"
                 return@setOnClickListener
             }
             binding.progressBar.visibility = View.VISIBLE

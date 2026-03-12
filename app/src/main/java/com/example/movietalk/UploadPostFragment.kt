@@ -175,7 +175,6 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                 return@setOnClickListener
             }
 
-            val username = user.email?.substringBefore("@") ?: "User"
             val rating = ratingBar.rating
             val id = FirebaseFirestore.getInstance().collection("posts").document().id
 
@@ -185,6 +184,26 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
             requireActivity().lifecycleScope.launch {
                 try {
                     android.util.Log.d("UploadPost", "Starting post creation...")
+
+                    val username = try {
+                        val userDoc = FirebaseFirestore.getInstance()
+                            .collection("users")
+                            .document(uid)
+                            .get()
+                            .await()
+
+                        userDoc.getString("username")
+                            ?.takeIf { it.isNotBlank() }
+                            ?: withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                localDb.userDao().getUser(uid)?.username
+                            }
+                            ?: user.email?.substringBefore("@")
+                            ?: "User"
+                    } catch (_: Exception) {
+                        withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            localDb.userDao().getUser(uid)?.username
+                        } ?: user.email?.substringBefore("@") ?: "User"
+                    }
 
                     val uploadedImageUrl = selectedImageUri?.let { imageUri ->
                         android.util.Log.d("UploadPost", "Uploading image to Firebase Storage...")

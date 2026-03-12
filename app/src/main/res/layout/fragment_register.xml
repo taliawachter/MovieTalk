@@ -109,6 +109,17 @@
                 android:textColorHint="#80FFFFFF" />
 
             <EditText
+                android:id="@+id/etRegisterUsername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="@android:color/white"
+                android:hint="Username"
+                android:inputType="textPersonName"
+                android:textColor="@android:color/white"
+                android:textColorHint="#80FFFFFF" />
+
+            <EditText
                 android:id="@+id/etRegisterPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
