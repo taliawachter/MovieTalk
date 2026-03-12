@@ -1,17 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:fitsSystemWindows="true"
-    android:background="@color/black">
+    android:fitsSystemWindows="true">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/backimg"
+        android:contentDescription="@null" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/black"
+        android:background="@android:color/transparent"
         app:title="Edit Post"
         app:titleTextColor="@color/white"
         app:navigationIcon="@drawable/ic_arrow_back_24" />
@@ -29,37 +44,55 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:boxBackgroundMode="outline"
+                app:boxStrokeColor="@color/gray"
+                app:boxStrokeWidth="1dp"
+                app:boxStrokeWidthFocused="2dp"
+                app:hintTextColor="@color/gray">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etEditTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Title"
-                    android:textColorHighlight="@color/white"
-                    android:textColorHint="@color/white" />
+                    android:padding="14dp"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/gray" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <RatingBar
                 android:id="@+id/rbEditRating"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="46dp"
                 android:layout_marginTop="12dp"
+                android:backgroundTint="@color/gray"
                 android:numStars="5"
+                android:progressTint="@color/red"
+                android:secondaryProgressTint="@color/gray"
                 android:stepSize="1.0" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp">
+                android:layout_marginTop="12dp"
+                app:boxBackgroundMode="outline"
+                app:boxStrokeColor="@color/gray"
+                app:boxStrokeWidth="1dp"
+                app:boxStrokeWidthFocused="2dp"
+                app:hintTextColor="@color/gray">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etEditText"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="85dp"
+                    android:gravity="top"
                     android:hint="Post text"
-                    android:minLines="3"
-                    android:inputType="textMultiLine"/>
+                    android:inputType="textMultiLine"
+                    android:padding="14dp"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/gray" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.button.MaterialButton
@@ -103,4 +136,5 @@
         </LinearLayout>
     </ScrollView>
 
-</LinearLayout>
+    </LinearLayout>
+</FrameLayout>
