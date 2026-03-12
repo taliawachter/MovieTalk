@@ -78,13 +78,28 @@
                 android:scaleType="centerCrop"
                 android:contentDescription="preview"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSaveEdit"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Save Changes"
-                android:backgroundTint="@color/red" />
+                android:layout_marginTop="16dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSaveEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Save Changes"
+                    android:backgroundTint="@color/red" />
+
+                <ProgressBar
+                    android:id="@+id/progressSave"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:indeterminate="true"
+                    android:indeterminateTint="@color/white"
+                    android:visibility="gone" />
+            </FrameLayout>
         </LinearLayout>
     </ScrollView>
 
