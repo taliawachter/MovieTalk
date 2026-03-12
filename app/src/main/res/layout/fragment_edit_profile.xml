@@ -25,16 +25,17 @@
         android:outlineSpotShadowColor="@color/red"
         android:padding="24dp">
 
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/ivEditAvatar"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="24dp"
-        android:background="@drawable/circle_background"
+        android:layout_marginTop="20dp"
         android:contentDescription="Profile picture"
         android:scaleType="centerCrop"
-        android:src="@drawable/ic_profile" />
+        android:src="@drawable/ic_profile"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MovieTalk.Circle"
+        app:strokeWidth="1dp" />
 
     <Button
         android:id="@+id/btnPickImage"
@@ -51,7 +52,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:backgroundTint="@android:color/white"
-        android:hint="Display Name"
+        android:hint="Username"
         android:textColor="@android:color/white"
         android:textColorHint="#B3FFFFFF" />
 
