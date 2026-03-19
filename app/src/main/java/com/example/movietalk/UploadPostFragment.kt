@@ -8,19 +8,13 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.example.movietalk.data.local.AppDatabase
-import com.example.movietalk.data.repository.PostRepository
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
 
 class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
 
@@ -34,26 +28,10 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
             .create(com.example.movietalk.data.api.OmdbApiService::class.java)
     }
 
-    private val auth by lazy { FirebaseAuth.getInstance() }
-    private val storage by lazy { FirebaseStorage.getInstance() }
+    private val viewModel: PostViewModel by viewModels()
 
     private var selectedImageUri: Uri? = null
-    private lateinit var repo: PostRepository
     private var fetchedMovieTitle: String? = null
-
-    private suspend fun uploadPostImageAndGetUrl(
-        imageUri: Uri,
-        uid: String,
-        postId: String
-    ): String {
-        val imageRef = storage.reference
-            .child("post_images")
-            .child(uid)
-            .child("$postId-${System.currentTimeMillis()}.jpg")
-
-        imageRef.putFile(imageUri).await()
-        return imageRef.downloadUrl.await().toString()
-    }
 
     private val pickImage =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -80,9 +58,6 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
         val etTitle = view.findViewById<EditText>(R.id.etTitle)
         val progressFetchOmdb = view.findViewById<ProgressBar>(R.id.progressFetchOmdb)
 
-        val localDb = AppDatabase.getInstance(requireContext())
-        repo = PostRepository(FirebaseFirestore.getInstance(), localDb.postDao())
-
         val ivPreview = view.findViewById<ImageView>(R.id.ivPreview)
         val btnPickImage = view.findViewById<Button>(R.id.btnPickImage)
         val progressUpload = view.findViewById<ProgressBar>(R.id.progressUpload)
@@ -102,6 +77,10 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
             btnPickImage.isEnabled = !isLoading
             btnFetchOmdb.isEnabled = !isLoading
             btnPost.text = if (isLoading) "" else getString(R.string.create_post)
+        }
+
+        viewModel.uploadLoading.observe(viewLifecycleOwner) { isLoading ->
+            setUploadLoading(isLoading)
         }
 
         fetchedMovieTitle = null
@@ -194,75 +173,14 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                 return@setOnClickListener
             }
 
-            val user = auth.currentUser
-            val uid = user?.uid ?: run {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.not_logged_in),
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
             val rating = ratingBar.rating
-            val id = FirebaseFirestore.getInstance().collection("posts").document().id
 
-            setUploadLoading(true)
-
-            requireActivity().lifecycleScope.launch {
-                try {
-                    android.util.Log.d("UploadPost", "Starting post creation...")
-
-                    val username = try {
-                        val userDoc = FirebaseFirestore.getInstance()
-                            .collection("users")
-                            .document(uid)
-                            .get()
-                            .await()
-
-                        userDoc.getString("username")
-                            ?.takeIf { it.isNotBlank() }
-                            ?: withContext(Dispatchers.IO) {
-                                localDb.userDao().getUser(uid)?.username
-                            }
-                            ?: user.email?.substringBefore("@")
-                            ?: getString(R.string.default_user)
-                    } catch (_: Exception) {
-                        withContext(Dispatchers.IO) {
-                            localDb.userDao().getUser(uid)?.username
-                        } ?: user.email?.substringBefore("@") ?: getString(R.string.default_user)
-                    }
-
-                    val uploadedImageUrl = selectedImageUri?.let { imageUri ->
-                        android.util.Log.d("UploadPost", "Uploading image to Firebase Storage...")
-                        uploadPostImageAndGetUrl(imageUri, uid, id)
-                    }.orEmpty()
-
-                    val postObj = Post(
-                        id = id,
-                        title = title,
-                        text = text,
-                        rating = rating,
-                        userId = uid,
-                        userName = username,
-                        imageUrl = uploadedImageUrl,
-                        createdAt = System.currentTimeMillis(),
-                    )
-
-                    android.util.Log.d("UploadPost", "Adding post...")
-                    val result = withTimeoutOrNull(15000) {
-                        repo.addPost(postObj)
-                    }
-
-                    if (result == null) {
-                        throw Exception(getString(R.string.firestore_timeout))
-                    }
-
-                    android.util.Log.d("UploadPost", "Refreshing posts...")
-                    repo.refreshPosts()
-                    android.util.Log.d("UploadPost", "refreshPosts completed")
-
-                    android.util.Log.d("UploadPost", "Post uploaded successfully!")
+            viewModel.createPost(
+                title = title,
+                text = text,
+                rating = rating,
+                imageUri = selectedImageUri,
+                onSuccess = {
                     if (isAdded) {
                         Toast.makeText(
                             requireContext(),
@@ -281,43 +199,44 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
                             visibility = View.GONE
                         }
 
-                        delay(1000)
-
-                        if (isAdded) {
-                            try {
-                                findNavController().navigate(R.id.action_uploadPostFragment_to_homeFragment)
-                            } catch (navException: Exception) {
-                                android.util.Log.e("UploadPost", "Navigation failed", navException)
-                                Toast.makeText(
-                                    requireContext(),
-                                    getString(
-                                        R.string.navigation_error,
-                                        navException.message ?: getString(R.string.unknown_error)
-                                    ),
-                                    Toast.LENGTH_LONG
-                                ).show()
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            delay(1000)
+                            if (isAdded) {
+                                try {
+                                    findNavController().navigate(R.id.action_uploadPostFragment_to_homeFragment)
+                                } catch (navException: Exception) {
+                                    android.util.Log.e("UploadPost", "Navigation failed", navException)
+                                    Toast.makeText(
+                                        requireContext(),
+                                        getString(
+                                            R.string.navigation_error,
+                                            navException.message ?: getString(R.string.unknown_error)
+                                        ),
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
                             }
                         }
                     }
-
-                } catch (e: Exception) {
-                    android.util.Log.e("UploadPost", "Upload failed", e)
+                },
+                onError = { message ->
                     if (isAdded) {
+                        val normalizedMessage =
+                            if (message.equals("Not logged in", ignoreCase = true)) {
+                                getString(R.string.not_logged_in)
+                            } else if (message.equals("Firestore timeout", ignoreCase = true)) {
+                                getString(R.string.firestore_timeout)
+                            } else {
+                                message
+                            }
                         Toast.makeText(
                             requireContext(),
-                            getString(
-                                R.string.upload_failed,
-                                e.message ?: getString(R.string.unknown_error)
-                            ),
+                            getString(R.string.upload_failed, normalizedMessage),
                             Toast.LENGTH_LONG
                         ).show()
                     }
-                } finally {
-                    if (isAdded) {
-                        setUploadLoading(false)
-                    }
                 }
-            }
+            )
         }
 
         view.post {

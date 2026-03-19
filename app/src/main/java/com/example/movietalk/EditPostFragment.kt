@@ -7,20 +7,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.example.movietalk.databinding.FragmentEditPostBinding
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class EditPostFragment : Fragment() {
     private var _binding: FragmentEditPostBinding? = null
     private val binding get() = _binding!!
     private val args: EditPostFragmentArgs by navArgs()
-    private val db by lazy { FirebaseFirestore.getInstance() }
+    private val viewModel: PostViewModel by viewModels()
     private var selectedImageUri: Uri? = null
     private var currentImageUrl: String? = null
 
@@ -50,6 +47,10 @@ class EditPostFragment : Fragment() {
             findNavController().popBackStack()
         }
 
+        viewModel.saveLoading.observe(viewLifecycleOwner) { isLoading ->
+            setSaveLoading(isLoading)
+        }
+
         val postId = args.postId
         if (postId.isBlank()) {
             Toast.makeText(requireContext(), "Missing postId", Toast.LENGTH_SHORT).show()
@@ -69,18 +70,13 @@ class EditPostFragment : Fragment() {
     }
 
     private fun loadPost(postId: String) {
-        lifecycleScope.launch {
-            try {
-                val doc = db.collection("posts").document(postId).get().await()
-                if (!doc.exists()) {
-                    Toast.makeText(requireContext(), "Post not found", Toast.LENGTH_SHORT).show()
-                    findNavController().navigateUp()
-                    return@launch
-                }
-                binding.etEditTitle.setText(doc.getString("title") ?: "")
-                binding.etEditText.setText(doc.getString("text") ?: "")
-                binding.rbEditRating.rating = (doc.getDouble("rating") ?: 0.0).toFloat()
-                currentImageUrl = doc.getString("imageUrl")
+        viewModel.loadPost(
+            postId = postId,
+            onLoaded = { post ->
+                binding.etEditTitle.setText(post.title)
+                binding.etEditText.setText(post.text)
+                binding.rbEditRating.rating = post.rating
+                currentImageUrl = post.imageUrl
 
                 if (!currentImageUrl.isNullOrBlank()) {
                     binding.imgPreview.visibility = View.VISIBLE
@@ -90,11 +86,16 @@ class EditPostFragment : Fragment() {
                 } else {
                     binding.imgPreview.visibility = View.GONE
                 }
-            } catch (_: Exception) {
+            },
+            onNotFound = {
+                Toast.makeText(requireContext(), "Post not found", Toast.LENGTH_SHORT).show()
+                findNavController().navigateUp()
+            },
+            onError = {
                 Toast.makeText(requireContext(), "Failed to load post", Toast.LENGTH_SHORT).show()
                 findNavController().navigateUp()
             }
-        }
+        )
     }
 
     private fun setSaveLoading(isLoading: Boolean) {
@@ -108,27 +109,20 @@ class EditPostFragment : Fragment() {
         val newText = binding.etEditText.text?.toString()?.trim().orEmpty()
         val newRating = binding.rbEditRating.rating
 
-        val updates = hashMapOf<String, Any>(
-            "title" to newTitle,
-            "text" to newText,
-            "rating" to newRating
-        )
-
-        selectedImageUri?.let { uri ->
-            updates["imageUrl"] = uri.toString()
-        }
-
-        setSaveLoading(true)
-        db.collection("posts").document(postId).update(updates)
-            .addOnSuccessListener {
-                setSaveLoading(false)
+        viewModel.updatePost(
+            postId = postId,
+            title = newTitle,
+            text = newText,
+            rating = newRating,
+            imageUri = selectedImageUri,
+            onSuccess = {
                 Toast.makeText(requireContext(), "Post updated", Toast.LENGTH_SHORT).show()
                 findNavController().navigateUp()
-            }
-            .addOnFailureListener {
-                setSaveLoading(false)
+            },
+            onError = {
                 Toast.makeText(requireContext(), "Edit failed", Toast.LENGTH_SHORT).show()
             }
+        )
     }
 
     override fun onDestroyView() {

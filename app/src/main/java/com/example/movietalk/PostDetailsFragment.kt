@@ -6,12 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.example.movietalk.databinding.FragmentPostDetailsBinding
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -24,7 +24,7 @@ class PostDetailsFragment : Fragment() {
     private var _binding: FragmentPostDetailsBinding? = null
     private val binding get() = _binding!!
     private val args: PostDetailsFragmentArgs by navArgs()
-    private val db by lazy { FirebaseFirestore.getInstance() }
+    private val viewModel: PostViewModel by viewModels()
 
     private val omdbApiService by lazy {
         retrofit2.Retrofit.Builder()
@@ -57,20 +57,15 @@ class PostDetailsFragment : Fragment() {
     }
 
     private fun loadPost(postId: String) {
-        db.collection("posts").document(postId).get()
-            .addOnSuccessListener { doc ->
-                if (!doc.exists()) {
-                    Toast.makeText(requireContext(), getString(R.string.post_not_found), Toast.LENGTH_SHORT).show()
-                    findNavController().navigateUp()
-                    return@addOnSuccessListener
-                }
-
-                currentText = doc.getString("text").orEmpty()
-                currentImageUrl = doc.getString("imageUrl")
-                currentOwnerId = doc.getString("userId")
-                currentTitle = doc.getString("title").orEmpty()
-                currentRating = (doc.getDouble("rating") ?: 0.0).toFloat()
-                val userName = doc.getString("userName") ?: getString(R.string.user)
+        viewModel.loadPost(
+            postId = postId,
+            onLoaded = { post ->
+                currentText = post.text
+                currentImageUrl = post.imageUrl
+                currentOwnerId = post.userId
+                currentTitle = post.title
+                currentRating = post.rating
+                val userName = post.userName.ifBlank { getString(R.string.user) }
 
                 if (!currentImageUrl.isNullOrBlank()) {
                     binding.ivPostImage.visibility = View.VISIBLE
@@ -85,7 +80,7 @@ class PostDetailsFragment : Fragment() {
                 binding.tvPostAuthor.text = getString(R.string.posted_by, userName)
 
                 val currentUserUid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
-                val isOwner = currentOwnerId != null && currentUserUid == currentOwnerId
+                val isOwner = currentOwnerId.isNullOrBlank().not() && currentUserUid == currentOwnerId
                 android.util.Log.d("PostDetails", "currentOwnerId=$currentOwnerId, currentUserUid=$currentUserUid, isOwner=$isOwner")
                 binding.btnEditPost.visibility = if (isOwner) View.VISIBLE else View.GONE
                 binding.btnDeletePost.visibility = if (isOwner) View.VISIBLE else View.GONE
@@ -113,10 +108,15 @@ class PostDetailsFragment : Fragment() {
                         binding.tvOmdbActors.text = getString(R.string.actors_value, "-")
                     }
                 }
-            }
-            .addOnFailureListener {
+            },
+            onNotFound = {
+                Toast.makeText(requireContext(), getString(R.string.post_not_found), Toast.LENGTH_SHORT).show()
+                findNavController().navigateUp()
+            },
+            onError = {
                 Toast.makeText(requireContext(), getString(R.string.failed_to_load_post), Toast.LENGTH_SHORT).show()
             }
+        )
     }
     private fun confirmDelete(postId: String) {
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
@@ -128,24 +128,16 @@ class PostDetailsFragment : Fragment() {
     }
 
     private fun deletePost(postId: String) {
-        db.collection("posts").document(postId).delete()
-            .addOnSuccessListener {
-                viewLifecycleOwner.lifecycleScope.launch {
-                    try {
-                        val localDb = com.example.movietalk.data.local.AppDatabase.getInstance(requireContext())
-                        val repo = com.example.movietalk.data.repository.PostRepository(db, localDb.postDao())
-                        repo.deletePostById(postId)
-                        repo.refreshPosts()
-                    } catch (e: Exception) {
-                        android.util.Log.e("PostDetails", "Failed to delete local post", e)
-                    }
-                }
+        viewModel.deletePost(
+            postId = postId,
+            onSuccess = {
                 Toast.makeText(requireContext(), getString(R.string.deleted), Toast.LENGTH_SHORT).show()
-                findNavController().navigateUp() // or navigate to Home
-            }
-            .addOnFailureListener {
+                findNavController().navigateUp()
+            },
+            onError = {
                 Toast.makeText(requireContext(), getString(R.string.delete_failed), Toast.LENGTH_SHORT).show()
             }
+        )
     }
 
     override fun onDestroyView() {
