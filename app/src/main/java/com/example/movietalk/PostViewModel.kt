@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.movietalk.data.local.AppDatabase
 import com.example.movietalk.data.repository.PostRepository
@@ -26,11 +27,23 @@ class PostViewModel(app: Application) : AndroidViewModel(app) {
     private val appDb = AppDatabase.getInstance(app.applicationContext)
     private val repo = PostRepository(firestore, appDb.postDao())
 
+    val postsLiveData = repo.observePosts().asLiveData()
+
     private val _uploadLoading = MutableLiveData(false)
     val uploadLoading: LiveData<Boolean> = _uploadLoading
 
     private val _saveLoading = MutableLiveData(false)
     val saveLoading: LiveData<Boolean> = _saveLoading
+
+    fun refreshPosts() {
+        viewModelScope.launch {
+            try {
+                repo.refreshPosts()
+            } catch (e: Exception) {
+                android.util.Log.e("PostViewModel", "Refresh failed", e)
+            }
+        }
+    }
 
     fun createPost(
         title: String,
@@ -52,7 +65,9 @@ class PostViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             try {
                 val username = resolveUsername(uid, user.email)
-                val uploadedImageUrl = imageUri?.let { uploadPostImageAndGetUrl(it, uid, postId) }.orEmpty()
+                val uploadedImageUrl = imageUri
+                    ?.let { uploadPostImageAndGetUrl(it, uid, postId) }
+                    .orEmpty()
 
                 val postObj = Post(
                     id = postId,
@@ -68,6 +83,7 @@ class PostViewModel(app: Application) : AndroidViewModel(app) {
                 val result = withTimeoutOrNull(15000) {
                     repo.addPost(postObj)
                 }
+
                 if (result == null) {
                     throw Exception("Firestore timeout")
                 }
@@ -96,7 +112,8 @@ class PostViewModel(app: Application) : AndroidViewModel(app) {
                     return@launch
                 }
                 onLoaded(doc.toPost())
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                android.util.Log.e("PostViewModel", "Load post failed", e)
                 onError()
             }
         }
@@ -114,17 +131,33 @@ class PostViewModel(app: Application) : AndroidViewModel(app) {
         _saveLoading.value = true
         viewModelScope.launch {
             try {
-                val updates = hashMapOf<String, Any>(
-                    "title" to title,
-                    "text" to text,
-                    "rating" to rating,
-                )
-                imageUri?.let { updates["imageUrl"] = it.toString() }
+                val existingDoc = firestore.collection("posts").document(postId).get().await()
+                if (!existingDoc.exists()) {
+                    onError()
+                    return@launch
+                }
 
-                firestore.collection("posts").document(postId).update(updates).await()
+                val existingPost = existingDoc.toPost()
+                val uid = auth.currentUser?.uid ?: existingPost.userId
+
+                val finalImageUrl = if (imageUri != null) {
+                    uploadPostImageAndGetUrl(imageUri, uid, postId)
+                } else {
+                    existingPost.imageUrl
+                }
+
+                val updatedPost = existingPost.copy(
+                    title = title,
+                    text = text,
+                    rating = rating,
+                    imageUrl = finalImageUrl
+                )
+
+                repo.updatePost(updatedPost)
                 repo.refreshPosts()
                 onSuccess()
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                android.util.Log.e("PostViewModel", "Update failed", e)
                 onError()
             } finally {
                 _saveLoading.value = false
@@ -132,14 +165,18 @@ class PostViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun deletePost(postId: String, onSuccess: () -> Unit, onError: () -> Unit) {
+    fun deletePost(
+        postId: String,
+        onSuccess: () -> Unit,
+        onError: () -> Unit
+    ) {
         viewModelScope.launch {
             try {
-                firestore.collection("posts").document(postId).delete().await()
                 repo.deletePostById(postId)
                 repo.refreshPosts()
                 onSuccess()
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                android.util.Log.e("PostViewModel", "Delete failed", e)
                 onError()
             }
         }
@@ -162,7 +199,11 @@ class PostViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private suspend fun uploadPostImageAndGetUrl(imageUri: Uri, uid: String, postId: String): String {
+    private suspend fun uploadPostImageAndGetUrl(
+        imageUri: Uri,
+        uid: String,
+        postId: String
+    ): String {
         val imageRef = storage.reference
             .child("post_images")
             .child(uid)

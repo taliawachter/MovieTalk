@@ -19,7 +19,7 @@ class PostRepository(
 
     suspend fun addPost(post: Post) {
         android.util.Log.d("PostRepository", "addPost called with id=${post.id}")
-        // Save to local database first (this always works)
+
         try {
             android.util.Log.d("PostRepository", "Writing to local DB...")
             postDao.upsertAll(listOf(post.toEntity()))
@@ -32,7 +32,6 @@ class PostRepository(
         try {
             android.util.Log.d("PostRepository", "Syncing to Firestore in background...")
             val data = hashMapOf(
-                // Do NOT include "id" field, Firestore document ID is the source of truth
                 "title" to post.title,
                 "text" to post.text,
                 "rating" to post.rating,
@@ -45,7 +44,6 @@ class PostRepository(
             firestore.collection("posts")
                 .document(post.id)
                 .set(data)
-                // Don't await - let it happen in background
                 .addOnSuccessListener {
                     android.util.Log.d("PostRepository", "Firestore sync successful")
                 }
@@ -53,7 +51,6 @@ class PostRepository(
                     android.util.Log.e("PostRepository", "Firestore sync failed", e)
                 }
         } catch (e: Exception) {
-            // Firestore sync error is non-critical
             android.util.Log.e("PostRepository", "Firestore sync error", e)
         }
     }
@@ -74,17 +71,39 @@ class PostRepository(
         }
         postDao.upsertAll(posts.map { it.toEntity() })
     }
+
+    suspend fun updatePost(post: Post) {
+        try {
+            val data = hashMapOf(
+                "title" to post.title,
+                "text" to post.text,
+                "rating" to post.rating,
+                "userId" to post.userId,
+                "userName" to post.userName,
+                "imageUrl" to post.imageUrl,
+                "createdAt" to post.createdAt
+            )
+
+            firestore.collection("posts")
+                .document(post.id)
+                .set(data)
+                .await()
+
+            postDao.upsertAll(listOf(post.toEntity()))
+        } catch (e: Exception) {
+            android.util.Log.e("PostRepository", "Update failed", e)
+            throw e
+        }
+    }
+
     suspend fun deletePostById(postId: String) {
         try {
-            // Delete from Firestore (remote)
             firestore.collection("posts")
                 .document(postId)
                 .delete()
                 .await()
 
-            // Delete from Roon (local)
             postDao.deleteById(postId)
-
         } catch (e: Exception) {
             android.util.Log.e("PostRepository", "Delete failed", e)
             throw e
