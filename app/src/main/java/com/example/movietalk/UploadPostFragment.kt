@@ -118,27 +118,26 @@ class UploadPostFragment : Fragment(R.layout.fragment_upload_post) {
             lifecycleScope.launch {
                 setFetchLoading(true)
                 try {
-                    val response = withContext(Dispatchers.IO) {
-                        omdbApiService.getMovieByTitle(omdbTitle, omdbApiKey).execute()
+                    val movie = withContext(Dispatchers.IO) {
+                        omdbApiService.getMovieByTitle(omdbTitle, omdbApiKey)
                     }
 
-                    val movie = response.body()
-                    fetchedMovieTitle = movie?.Title?.trim().orEmpty().ifBlank { null }
+                    fetchedMovieTitle = movie.Title?.trim().orEmpty().ifBlank { null }
 
                     etTitle.setText(fetchedMovieTitle.orEmpty())
                     etTitle.setSelection(etTitle.text?.length ?: 0)
 
                     tvOmdbYear.text = getString(
                         R.string.year_value,
-                        movie?.Year ?: getString(R.string.not_found)
+                        movie.Year ?: getString(R.string.not_found)
                     )
                     tvOmdbGenre.text = getString(
                         R.string.genre_value,
-                        movie?.Genre ?: getString(R.string.not_found)
+                        movie.Genre ?: getString(R.string.not_found)
                     )
                     tvOmdbActors.text = getString(
                         R.string.actors_value,
-                        movie?.Actors ?: getString(R.string.not_found)
+                        movie.Actors ?: getString(R.string.not_found)
                     )
 
                 } catch (_: Exception) {

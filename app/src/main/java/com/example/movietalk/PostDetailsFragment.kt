@@ -95,13 +95,13 @@ class PostDetailsFragment : Fragment() {
 
                 viewLifecycleOwner.lifecycleScope.launch {
                     try {
-                        val response = withContext(kotlinx.coroutines.Dispatchers.IO) {
-                            omdbApiService.getMovieByTitle(currentTitle, omdbApiKey).execute()
+                        val movie = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            omdbApiService.getMovieByTitle(currentTitle, omdbApiKey)
                         }
-                        val movie = response.body()
-                        binding.tvOmdbYear.text = getString(R.string.year_value, movie?.Year ?: "-")
-                        binding.tvOmdbGenre.text = getString(R.string.genre_value, movie?.Genre ?: "-")
-                        binding.tvOmdbActors.text = getString(R.string.actors_value, movie?.Actors ?: "-")
+
+                        binding.tvOmdbYear.text = getString(R.string.year_value, movie.Year ?: "-")
+                        binding.tvOmdbGenre.text = getString(R.string.genre_value, movie.Genre ?: "-")
+                        binding.tvOmdbActors.text = getString(R.string.actors_value, movie.Actors ?: "-")
                     } catch (_: Exception) {
                         binding.tvOmdbYear.text = getString(R.string.year_value, "-")
                         binding.tvOmdbGenre.text = getString(R.string.genre_value, "-")
