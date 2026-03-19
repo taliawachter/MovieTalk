@@ -26,4 +26,13 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp" />
 
+    <ProgressBar
+        android:id="@+id/progressHome"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:visibility="gone" />
+
 </FrameLayout>
