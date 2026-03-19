@@ -1,14 +1,14 @@
 package com.example.movietalk
 
-import androidx.core.net.toUri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
-import com.squareup.picasso.Picasso
 import android.widget.RatingBar
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 
 class PostsAdapter(
     private val onPostClick: (Post) -> Unit,
@@ -44,6 +44,7 @@ class PostsAdapter(
         private val tvDesc: TextView = itemView.findViewById(R.id.tvDesc)
         private val tvUsername: TextView = itemView.findViewById(R.id.tvUsername)
         private val imgPost: ImageView = itemView.findViewById(R.id.imgPost)
+
         fun bind(post: Post) {
             tvTitle.text = post.title.ifBlank { "Untitled" }
             tvDesc.text = post.text
@@ -55,13 +56,12 @@ class PostsAdapter(
                 imgPost.visibility = View.GONE
             } else {
                 imgPost.visibility = View.VISIBLE
-
-                val request = if (value.startsWith("content://") || value.startsWith("file://")) {
-                    Picasso.get().load(value.toUri())
-                } else {
-                    Picasso.get().load(value)
-                }
-                request.into(imgPost)
+                Glide.with(itemView.context)
+                    .load(value)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .placeholder(R.drawable.ic_profile_placeholder)
+                    .error(R.drawable.ic_profile_placeholder)
+                    .into(imgPost)
             }
 
             itemView.setOnClickListener { onPostClick(post) }

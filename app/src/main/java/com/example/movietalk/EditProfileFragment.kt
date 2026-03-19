@@ -10,6 +10,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.movietalk.databinding.FragmentEditProfileBinding
 
 class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
@@ -43,8 +45,9 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
         } catch (_: Exception) {
         }
 
-        com.squareup.picasso.Picasso.get()
+        Glide.with(this)
             .load(value)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
             .placeholder(R.drawable.ic_profile)
             .error(R.drawable.ic_profile)
             .into(binding.ivEditAvatar)
