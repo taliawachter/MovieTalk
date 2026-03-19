@@ -4,7 +4,6 @@ import com.example.movietalk.Post
 import com.example.movietalk.toEntity
 import com.example.movietalk.toPost
 import com.example.movietalk.data.local.PostDao
-import com.example.movietalk.data.local.PostEntity
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -75,8 +74,20 @@ class PostRepository(
         }
         postDao.upsertAll(posts.map { it.toEntity() })
     }
-
     suspend fun deletePostById(postId: String) {
-        postDao.deleteById(postId)
+        try {
+            // Delete from Firestore (remote)
+            firestore.collection("posts")
+                .document(postId)
+                .delete()
+                .await()
+
+            // Delete from Roon (local)
+            postDao.deleteById(postId)
+
+        } catch (e: Exception) {
+            android.util.Log.e("PostRepository", "Delete failed", e)
+            throw e
+        }
     }
 }
